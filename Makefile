@@ -10,6 +10,8 @@ SRCDIR = src/
 # Generated object files go here
 OBJDIR = obj/
 
+LINKOPTS = -lSDL2 -lSDL2main
+
 # if you just type "make", this happens
 .DEFAULT_GOAL: all
 # these rules don't refer to real files, so they shouldn't get timestamp-checked
@@ -35,17 +37,17 @@ DEPOBJ = $(filter-out $(TGTOBJ),$(OBJ))
 # - Require its corresponding object and all of the dependency objects to be up to date
 # - Throw everything to the system's default C++ compiler
 $(TARGETS): %: $(OBJDIR)%.o $(DEPOBJ)
-	$(CXX) -o $@ $< $(DEPOBJ)
+	$(CXX) -o $@ $< $(DEPOBJ) $(LINKOPTS)
 
 # To build an object:
 # - require its .cpp file to be up to date, all includes to be up to date, and the OBJDIR folder to exist
 # - Throw it and the includes to default C++ compiler
 $(OBJDIR)%.o: $(SRCDIR)%.cpp $(INC) | $(OBJDIR)
-	$(CXX) -I$(INCDIR) -c $< -o $@
+	$(CXX) $(LINKOPTS) -I$(INCDIR) -c $< -o $@
 
 # If the above rule fails, see if it has a .c file we can use instead of .cpp
 $(OBJDIR)%.o: $(SRCDIR)%.c $(INC) | $(OBJDIR)
-	$(CC) $(COPTS) -I$(INCDIR) -c $< -o $@
+	$(CC) $(LINKOPTS) $(COPTS) -I$(INCDIR) -c $< -o $@
 
 # If the object directory doesn't exist, make it
 $(OBJDIR):
