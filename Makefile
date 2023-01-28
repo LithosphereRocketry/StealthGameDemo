@@ -10,7 +10,8 @@ SRCDIR = src/
 # Generated object files go here
 OBJDIR = obj/
 
-LINKOPTS = -lSDL2 -lSDL2main
+LINKS = SDL2 SDL2main SDL2_image
+
 
 # if you just type "make", this happens
 .DEFAULT_GOAL: all
@@ -20,6 +21,7 @@ LINKOPTS = -lSDL2 -lSDL2main
 # make all = make (all of the final targets given)
 all: $(TARGETS)
 
+LINKOPTS = $(foreach link,$(LINKS),-l$(link))
 # includes = everything in INCDIR with a .h file extension
 INC = $(wildcard $(INCDIR)*.h)
 # C source files = SRCDIR with a .c file extension
@@ -43,11 +45,11 @@ $(TARGETS): %: $(OBJDIR)%.o $(DEPOBJ)
 # - require its .cpp file to be up to date, all includes to be up to date, and the OBJDIR folder to exist
 # - Throw it and the includes to default C++ compiler
 $(OBJDIR)%.o: $(SRCDIR)%.cpp $(INC) | $(OBJDIR)
-	$(CXX) $(LINKOPTS) -I$(INCDIR) -c $< -o $@
+	$(CXX) -I$(INCDIR) -c $< -o $@
 
 # If the above rule fails, see if it has a .c file we can use instead of .cpp
 $(OBJDIR)%.o: $(SRCDIR)%.c $(INC) | $(OBJDIR)
-	$(CC) $(LINKOPTS) $(COPTS) -I$(INCDIR) -c $< -o $@
+	$(CC) -I$(INCDIR) -c $< -o $@
 
 # If the object directory doesn't exist, make it
 $(OBJDIR):
