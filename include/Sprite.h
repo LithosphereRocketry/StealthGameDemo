@@ -5,50 +5,58 @@
 
 #include <SDL2/SDL.h>
 
-#include "CachedRenderer.h"
+#include "Caching.h"
 
-// Wrapper class for simple sprites
-// Sprites must be bound to a specific renderer
+// Wrapper class for any image that can be drawn to the screen
+// This is not memoized and exists per-instance
+// I might change this eventually, but not sure
 class Sprite {
     public:
-        /*
-        Sprite(CachedRenderer* renderer, char* path, <optional> SDL_Rect* mask = NULL)
-        Creates a sprite on the given renderer with the given image path and mask
-        renderer: SDL_Renderer to target; must continue to exist for the lifetime of the sprite
-        path: C string path to image, used only in constructor
-        mask: Portion of image to draw; used only in constructor
-        */
-        Sprite(CachedRenderer* renderer, const std::string path): Sprite(renderer, path, NULL) {}
-        Sprite(CachedRenderer* renderer, const std::string path, SDL_Rect* mask) {
-            rend = renderer;
-            if(mask) {
-                txmask = new SDL_Rect;
-                *txmask = *mask;
+        Sprite() {}
+        Sprite(const std::string path, SDL_Rect* clipMask) {
+            if(path != "") {
+                surf = CachedRenderer::fetchSurface(path);
             }
-            tx = rend->fetchTexture(path);
+            if(clipMask) {
+                txmask = *clipMask;
+            } else {
+                txmask = {0, 0, surf->w, surf->h};
+            }
         }
-        ~Sprite() {
-            delete txmask;
+        inline void load(CachedRenderer* renderer) {
+            rend = renderer;
+            tx = rend->fetchTexture(surf);
         }
         inline int render() { return render(NULL); }
         inline int render(int x, int y) {
             SDL_Rect tgtbox = {x, y, -1, -1};
-            if(txmask) {
-                tgtbox.w = txmask->w;
-                tgtbox.h = txmask->h;
-            } else {            
-                SDL_QueryTexture(tx, NULL, NULL, &tgtbox.w, &tgtbox.h);
-            }
+            tgtbox.w = txmask.w;
+            tgtbox.h = txmask.h;
+            SDL_QueryTexture(tx, NULL, NULL, &tgtbox.w, &tgtbox.h);
             return render(&tgtbox);
         }
         inline int render(SDL_Rect* location) {
-            return SDL_RenderCopy(rend->target, tx, txmask, location);
+            if(tx) {
+                if(rend && rend->target) {
+                    int err = SDL_RenderCopy(rend->target, tx, &txmask, location);
+                    if(err < 0) {
+                        std::cerr << "Warning: rendering failed with error " << SDL_GetError() << "\n";
+                    }
+                    return err;
+                } else {
+                    std::cerr << "Warning: tried to render to a nonexistent renderer\n";
+                    return 0;
+                }
+            } else {
+                std::cerr << "Warning: tried to render a nonexistent texture\n";
+                return 0;
+            }
         }
     private:
         CachedRenderer* rend = NULL;
+        SDL_Surface* surf = NULL;
         SDL_Texture* tx = NULL;
-        SDL_Rect* txmask = NULL;
-
+        SDL_Rect txmask;
 };
 
 #endif

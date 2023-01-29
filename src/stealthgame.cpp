@@ -4,7 +4,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_Image.h>
 
-#include "CachedRenderer.h"
+#include "Caching.h"
 #include "Tile.h"
 
 using namespace std;
@@ -34,16 +34,16 @@ int main(int argc, char** argv) {
     SDL_Rect floorbound = {64, 32, 16, 32};
 
     Tile wall = Tile("tilesheet.png", &wallbound);
-    Tile floor = Tile("tilesheet.png", &floorbound);
-
-    wall.position = {50, 150};
-    floor.position = {150, 50};
-
     wall.graphicsBox = {0, -100, 100, 200};
-    floor.graphicsBox = {0, -100, 100, 200};
+    wall.load(&cr);
 
-    wall.loadGraphics(&cr);
-    floor.loadGraphics(&cr);
+    Tile floor = Tile("tilesheet.png", &floorbound);
+    floor.graphicsBox = {0, -100, 100, 200};
+    floor.load(&cr);
+
+    TileGrid walls = TileGrid(10, 10, 100, 100);
+    walls.fill(&wall);
+    walls.fillRect(&floor, 1, 1, 8, 8);
 
     bool quit = false;
     while(quit == false) {
@@ -53,8 +53,8 @@ int main(int argc, char** argv) {
                 quit = true;
             }
         }
-        wall.draw(0, 0, 1);
-        floor.draw(0, 0, 1);
+        SDL_RenderClear(renderer);
+        walls.draw(0, 0, 0.25);
         cr.display();
     }
 
