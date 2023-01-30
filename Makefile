@@ -12,6 +12,9 @@ OBJDIR = obj/
 
 LINKS = SDL2 SDL2main SDL2_image
 
+CPPOPTS = -pedantic -O2
+COPTS = -pedantic -O2
+
 
 # if you just type "make", this happens
 .DEFAULT_GOAL: all
@@ -45,11 +48,11 @@ $(TARGETS): %: $(OBJDIR)%.o $(DEPOBJ)
 # - require its .cpp file to be up to date, all includes to be up to date, and the OBJDIR folder to exist
 # - Throw it and the includes to default C++ compiler
 $(OBJDIR)%.o: $(SRCDIR)%.cpp $(INC) | $(OBJDIR)
-	$(CXX) -I$(INCDIR) -c $< -o $@
+	$(CXX) $(CPPOPTS) -I$(INCDIR) -c $< -o $@
 
 # If the above rule fails, see if it has a .c file we can use instead of .cpp
 $(OBJDIR)%.o: $(SRCDIR)%.c $(INC) | $(OBJDIR)
-	$(CC) -I$(INCDIR) -c $< -o $@
+	$(CC) $(COPTS) -I$(INCDIR) -c $< -o $@
 
 # If the object directory doesn't exist, make it
 $(OBJDIR):

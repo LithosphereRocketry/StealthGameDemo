@@ -1,4 +1,5 @@
 #include <iostream>
+#include <chrono>
 
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
@@ -27,26 +28,28 @@ int main(int argc, char** argv) {
 
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0xFF, 0xFF);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     CachedRenderer cr = CachedRenderer(renderer);
 
     SDL_Rect wallbound = {16, 0, 16, 32};
     SDL_Rect floorbound = {64, 32, 16, 32};
+    SDL_Rect tilebounds = {0, -100, 100, 200};
 
-    Tile wall = Tile("tilesheet.png", &wallbound);
-    wall.graphicsBox = {0, -100, 100, 200};
+    TilePrototype wall("tilesheet.png", &wallbound, &tilebounds);
     wall.load(&cr);
 
-    Tile floor = Tile("tilesheet.png", &floorbound);
-    floor.graphicsBox = {0, -100, 100, 200};
+    TilePrototype floor("tilesheet.png", &floorbound, &tilebounds);
     floor.load(&cr);
 
-    TileGrid walls = TileGrid(10, 10, 100, 100);
+    TileGrid walls = TileGrid(1000, 1000, 100, 100);
     walls.fill(&wall);
     walls.fillRect(&floor, 1, 1, 8, 8);
 
     bool quit = false;
     while(quit == false) {
+        auto start = chrono::steady_clock::now();
+
         SDL_Event e;
         while(SDL_PollEvent(&e)) {
             if(e.type == SDL_QUIT) {
@@ -56,10 +59,16 @@ int main(int argc, char** argv) {
         SDL_RenderClear(renderer);
         walls.draw(0, 0, 0.25);
         cr.display();
+
+        auto end = chrono::steady_clock::now();
+
+        cout << "Time elapsed: "
+             << chrono::duration_cast<chrono::microseconds>(end-start).count()
+             << " us\n";
     }
 
     SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow( window );
+    SDL_DestroyWindow(window);
     SDL_Quit();
 
     return 0;
