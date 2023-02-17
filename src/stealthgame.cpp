@@ -13,6 +13,10 @@ using namespace std;
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 
+const int samplect = 1000;
+int samples;
+long int tottime;
+
 int main(int argc, char** argv) {
     SDL_Window* window = nullptr;
 
@@ -62,9 +66,16 @@ int main(int argc, char** argv) {
 
         auto end = chrono::steady_clock::now();
 
-        cout << "Time elapsed: "
-             << chrono::duration_cast<chrono::microseconds>(end-start).count()
-             << " us\n";
+        tottime += chrono::duration_cast<chrono::microseconds>(end-start).count();
+        samples++;
+        if(samples >= samplect) {
+            cout << "Time elapsed/" << samplect << " frames: "
+                 << tottime
+                 << " us\n";
+            tottime = 0;
+            samples = 0;
+        }
+        
     }
 
     SDL_DestroyRenderer(renderer);

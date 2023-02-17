@@ -27,15 +27,16 @@ class Sprite {
             rend = renderer;
             tx = rend->fetchTexture(surf);
         }
-        inline int render() { return render(NULL); }
-        inline int render(int x, int y) {
+        inline int render(uint8_t alpha = SDL_ALPHA_OPAQUE) { return render(NULL, alpha); }
+        inline int render(int x, int y, uint8_t alpha = SDL_ALPHA_OPAQUE) {
             SDL_Rect tgtbox = {x, y, -1, -1};
             tgtbox.w = txmask.w;
             tgtbox.h = txmask.h;
             SDL_QueryTexture(tx, NULL, NULL, &tgtbox.w, &tgtbox.h);
-            return render(&tgtbox);
+            return render(&tgtbox, alpha);
         }
-        inline int render(SDL_Rect* location) {
+        inline int render(SDL_Rect* location, uint8_t alpha = SDL_ALPHA_OPAQUE) {
+            SDL_SetTextureAlphaMod(tx, alpha);
             if(tx) {
                 if(rend && rend->target) {
                     int err = SDL_RenderCopy(rend->target, tx, &txmask, location);
