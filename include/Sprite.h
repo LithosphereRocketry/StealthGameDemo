@@ -14,9 +14,7 @@ class Sprite {
     public:
         Sprite() {}
         Sprite(const std::string path, SDL_Rect* clipMask) {
-            if(path != "") {
-                surf = CachedRenderer::fetchSurface(path);
-            }
+            surf = CachedRenderer::fetchSurface(path);
             if(clipMask) {
                 txmask = *clipMask;
             } else {

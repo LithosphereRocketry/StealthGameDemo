@@ -2,7 +2,9 @@
 #define TILE_H
 
 #include <string>
+#include <vector>
 #include <math.h>
+#include <memory>
 
 #include <SDL2/SDL.h>
 
@@ -40,16 +42,15 @@ class TilePrototype {
         SDL_Point* screenCenter;
         SDL_Rect graphicsBox;
         TilePrototype(std::string txpath, SDL_Rect* location, SDL_Rect* gbox);
-        ~TilePrototype();
         void load(CachedRenderer* dest) {
             sprite->load(dest);
             screenCenter = &dest->center;
         }
         int draw(float camx, float camy, float zoom, SDL_Point* position);
         int drawClipped(float camx, float camy, float zoom, SDL_Point* position);
-        Tile* instantiate(SDL_Point* loc);
+        std::unique_ptr<Tile> instantiate(SDL_Point* loc);
     private:
-        Sprite* sprite;
+        std::unique_ptr<Sprite> sprite;
 };
 
 // Class for tile grids
@@ -57,31 +58,16 @@ class TilePrototype {
 class TileGrid {
     public:
         TileGrid(size_t w, size_t h, int tw, int th);
-        ~TileGrid() {
-            for(int i = 0; i < shape.w*shape.h; i++) {
-                delete buffer[i];
-            }
-            delete[] buffer;
-        }
-
-        inline Tile** operator [] (size_t i) { return buffer + shape.w*i; }
+        inline Tile* index(int x, int y) { return buffer[y*shape.w + x].get(); }
         inline void fill(TilePrototype* prototype) { fillRect(prototype, 0, 0, shape.w, shape.h); }
-        inline void put(TilePrototype* prototype, int x, int y) {
-            if(operator[](y)[x]) {
-                delete operator[](y)[x];
-            }
-            SDL_Point p = {x*tileWidth, y*tileHeight};
-            Tile* t = new Tile(prototype, &p);
-            mergeBounds(&prototype->graphicsBox, &maxBound, &maxBound);
-            operator[](y)[x] = t;
-        }
+        void put(TilePrototype* prototype, int x, int y);
         void fillRect(TilePrototype* prototype, int x, int y, int w, int h);
         void draw(float camx, float camy, float zoom);
     private:
         SDL_Rect shape = {0, 0, 0, 0};
         int tileWidth;
         int tileHeight;
-        Tile** buffer;
+        std::vector<std::unique_ptr<Tile>> buffer;
         SDL_Rect maxBound = {0, 0, 0, 0};
 };
 

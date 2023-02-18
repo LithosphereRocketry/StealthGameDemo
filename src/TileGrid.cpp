@@ -5,9 +5,14 @@ TileGrid::TileGrid(size_t w, size_t h, int tw, int th) {
     shape.h = h;
     tileWidth = tw;
     tileHeight = th;
-    buffer = new Tile*[shape.w*shape.h](); // () needed here to make sure the tiles get initialized as nullptr
+    buffer = std::vector<std::unique_ptr<Tile>>(w*h);
 }
 
+void TileGrid::put(TilePrototype* prototype, int x, int y) {
+    SDL_Point p = {x*tileWidth, y*tileHeight};
+    mergeBounds(&prototype->graphicsBox, &maxBound, &maxBound);
+    buffer[y*shape.w + x] = std::unique_ptr<Tile>(std::move(prototype->instantiate(&p)));
+}
 
 void TileGrid::fillRect(TilePrototype* prototype, int x, int y, int w, int h) {
     for(int i = y; i < y+h; i++) {
@@ -32,10 +37,10 @@ void TileGrid::draw(float camx, float camy, float zoom) {
     int ymax = std::min((float) shape.h, (-maxBound.y + ctr->y/zoom)/tileHeight + 1);
     for(int i = ymin; i < ymax; i++) {
         for(int j = xmin; j < xmax; j++) {
-            if(!buffer[i*shape.w + j]) {
+            if(index(j, i)) {
                 std::cerr << "Warning: tried to draw an uninitialized tile\n";
             }
-            buffer[i*shape.w + j]->draw(camx, camy, zoom);
+            index(j, i)->draw(camx, camy, zoom);
         }
     }
 }

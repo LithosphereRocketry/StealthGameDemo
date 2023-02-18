@@ -1,11 +1,8 @@
 #include "Tile.h"
 
 TilePrototype::TilePrototype(std::string txpath, SDL_Rect* location, SDL_Rect* gbox) {
-    sprite = new Sprite(txpath, location);
+    sprite = std::make_unique<Sprite>(txpath, location);
     graphicsBox = *gbox;
-}
-TilePrototype::~TilePrototype() {
-    delete sprite;
 }
 
 int TilePrototype::draw(float camx, float camy, float zoom, SDL_Point* position) {
@@ -35,6 +32,6 @@ int TilePrototype::drawClipped(float camx, float camy, float zoom, SDL_Point* po
     }
 }
 
-Tile* TilePrototype::instantiate(SDL_Point* loc) {
-    return new Tile(this, loc);
+std::unique_ptr<Tile> TilePrototype::instantiate(SDL_Point* loc) {
+    return std::make_unique<Tile>(this, loc);
 }
