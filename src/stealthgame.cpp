@@ -7,6 +7,7 @@
 
 #include "Caching.h"
 #include "Tile.h"
+#include "VectorMath.h"
 
 using namespace std;
 
@@ -18,6 +19,16 @@ int samples;
 long int tottime;
 
 int main(int argc, char** argv) {
+    float t1[] = {1, 2, 3};
+    float t2[] = {1, 0, 0};
+    Vector<float, 3> a(t1);
+    Vector<float, 3> b(t2);
+
+    cout << a << b << a.dot(b) << a.cross(b) << endl;
+
+
+
+
     SDL_Window* window = nullptr;
 
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {

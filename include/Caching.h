@@ -25,20 +25,10 @@ class CachedRenderer {
             }
         }
         // Rule of five safety things
-        CachedRenderer(const CachedRenderer& other) {
-            std::cerr << "CachedRenderer copy constructor is not safe\n";
-        }
-        CachedRenderer(CachedRenderer&& other) {
-            std::cerr << "CachedRenderer move constructor is not safe\n";
-        }
-        inline CachedRenderer& operator=(const CachedRenderer& other) {
-            std::cerr << "CachedRenderer copy assignment is not safe\n";
-            return *(new CachedRenderer(nullptr)); // this is an awful line and a memory leak but who cares this is an error case
-        }
-        inline CachedRenderer& operator=(CachedRenderer&& other) {
-            std::cerr << "CachedRenderer move assignment is not safe\n";
-            return *(new CachedRenderer(nullptr));
-        }
+        CachedRenderer(const CachedRenderer& other) = delete;
+        CachedRenderer(CachedRenderer&& other) = delete;
+        inline CachedRenderer& operator=(const CachedRenderer& other) = delete;
+        inline CachedRenderer& operator=(CachedRenderer&& other) = delete;
         static inline SDL_Surface* fetchSurface(const std::string path) {
             if(!surfaceCache[path]) {
                 surfaceCache[path] = IMG_Load(path.c_str());

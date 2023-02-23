@@ -38,9 +38,10 @@ void TileGrid::draw(float camx, float camy, float zoom) {
     for(int i = ymin; i < ymax; i++) {
         for(int j = xmin; j < xmax; j++) {
             if(index(j, i)) {
-                std::cerr << "Warning: tried to draw an uninitialized tile\n";
+                index(j, i)->draw(camx, camy, zoom);
+            } else {
+                std::cerr << "Warning: tried to draw an uninitialized tile at (" << j << ", " << i << ")\n";
             }
-            index(j, i)->draw(camx, camy, zoom);
         }
     }
 }
