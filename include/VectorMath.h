@@ -1,6 +1,7 @@
 #ifndef VECTOR_MATH_H
 #define VECTOR_MATH_H
 #include <initializer_list>
+#include <iostream>
 
 // TYPE here should really be something like float or double
 template <class TYPE, int SIZE>
@@ -19,18 +20,44 @@ class Vector {
         inline TYPE& operator [] (int index) {
             return data[index];
         }
-        Vector<TYPE, SIZE> operator * (const TYPE& scalar) const {
-            Vector<TYPE, SIZE> v;
+        void operator *= (const TYPE& scalar) {
             for(int i = 0; i < SIZE; i++) {
-                v[i] = data[i]*scalar;
+                data[i] *= scalar;
             }
+        }
+        inline Vector<TYPE, SIZE> operator * (const TYPE& scalar) const {
+            Vector<TYPE, SIZE> v(*this);
+            v *= scalar;
             return v;
         }
-        Vector<TYPE, SIZE> operator + (const Vector<TYPE, SIZE>& other) const {
-            Vector<TYPE, SIZE> v;
+        void operator /= (const TYPE& scalar) {
             for(int i = 0; i < SIZE; i++) {
-                v[i] = data[i] + other[i];
+                data[i] /= scalar;
             }
+        }
+        inline Vector<TYPE, SIZE> operator / (const TYPE& scalar) const {
+            Vector<TYPE, SIZE> v(*this);
+            v /= scalar;
+            return v;
+        }
+        void operator += (const Vector<TYPE, SIZE>& other) {
+            for(int i = 0; i < SIZE; i++) {
+                data[i] += other[i];
+            }
+        }
+        inline Vector<TYPE, SIZE> operator + (const TYPE& scalar) const {
+            Vector<TYPE, SIZE> v(*this);
+            v += scalar;
+            return v;
+        }
+        void operator -= (const Vector<TYPE, SIZE>& other) {
+            for(int i = 0; i < SIZE; i++) {
+                data[i] -= other[i];
+            }
+        }
+        inline Vector<TYPE, SIZE> operator - (const TYPE& scalar) const {
+            Vector<TYPE, SIZE> v(*this);
+            v -= scalar;
             return v;
         }
         TYPE dot(const Vector<TYPE, SIZE>& other) const {
@@ -50,6 +77,13 @@ class Vector {
         }
         TYPE magSq() { return dot(*this); }
         TYPE mag() { return sqrt(magSq()); }
+
+        Vector<TYPE, SIZE> proj(Vector<TYPE, SIZE> other) { // project self onto other
+            return other * dot(other) / magSq(other);
+        }
+        Vector<TYPE, SIZE> rej(Vector<TYPE, SIZE> other) { // reject self onto other
+            return operator-(proj(other));
+        }
 };
 
 // make vectors printable

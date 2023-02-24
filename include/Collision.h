@@ -1,0 +1,60 @@
+#ifndef COLLISION_H
+#define COLLISION_H
+
+#include "Physics.h"
+
+/*
+Abstract collision-related types
+
+A Collidiable is any static structure that a physics object may collide with. This includes
+aggregate objects such as tiles, grids, etc.
+
+A Collider is a physical object that can be collided with. This cannot be an aggregate; it
+must have its own material properties, etc.
+
+A CollidingObject is a PhysicsObject that may interact with Colliders. As of right now,
+moving objects must be circular. CollidingObjects have a specific "collision universe"
+that is passed in at object creation and may be changed as desired; this is an aggregate
+Collidable representing everything the object can collide with.
+
+The process for detecting collisions goes roughly like this:
+
+A CollidingObject wishes to move. It asks its Collidable what the nearest object on its
+path is and what the distance to that object is. If the distance is less than the distance
+it needs to travel this frame, it steps as normal. Otherwise, things get interesting.
+*/
+class CollidingObject;
+class Collider;
+
+struct FreePathResult {
+    float distSq;
+    Collider* target;
+};
+
+class Collidable {
+    public:
+        virtual FreePathResult getFreePath(const Vector<float, 2> pos,
+                                           const Vector<float, 2> dir,
+                                           float radius) const;
+};
+
+class Collider: public Collidable {
+    public:
+        virtual void collide(CollidingObject* obj); // modifies obj
+};
+
+class CollidingObject: public PhysicsObject {
+    public:
+        float radius;
+        float elasticity;
+        Collider* environment;
+        CollidingObject() {};
+        CollidingObject(float x, float y, float r, float e, Collider* env): PhysicsObject(x, y) {
+            radius = r;
+            elasticity = e;
+            environment = env;
+        }
+        void step(float dt);
+};
+
+#endif
