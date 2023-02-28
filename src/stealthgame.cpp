@@ -7,7 +7,7 @@
 
 #include "Caching.h"
 #include "Tile.h"
-#include "VectorMath.h"
+#include "Collision.h"
 
 using namespace std;
 
@@ -71,6 +71,7 @@ int main(int argc, char** argv) {
         tottime += chrono::duration_cast<chrono::microseconds>(end-start).count();
         samples++;
         if(samples >= samplect) {
+            cout << __cplusplus << endl;
             cout << "Time elapsed/" << samplect << " frames: "
                  << tottime
                  << " us\n";

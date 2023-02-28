@@ -2,16 +2,17 @@
 #define VECTOR_MATH_H
 #include <initializer_list>
 #include <iostream>
+#include <math.h>
 
 // TYPE here should really be something like float or double
-template <class TYPE, int SIZE>
+template <class TYPE, size_t SIZE>
 class Vector {
     public:
         TYPE data[SIZE];
-        Vector() {}
-        Vector(TYPE dataIn[SIZE]) {
-            for(int i = 0; i < SIZE; i++) {
-                data[i] = dataIn[i];
+        Vector(std::initializer_list<TYPE> lst) {
+            size_t pos = 0;
+            for(TYPE element : lst) {
+                data[pos++] = element; // I kinda hate this
             }
         }
         inline TYPE operator [] (int index) const {
@@ -45,9 +46,9 @@ class Vector {
                 data[i] += other[i];
             }
         }
-        inline Vector<TYPE, SIZE> operator + (const TYPE& scalar) const {
+        inline Vector<TYPE, SIZE> operator + (const Vector<TYPE, SIZE>& other) const {
             Vector<TYPE, SIZE> v(*this);
-            v += scalar;
+            v += other;
             return v;
         }
         void operator -= (const Vector<TYPE, SIZE>& other) {
@@ -55,9 +56,9 @@ class Vector {
                 data[i] -= other[i];
             }
         }
-        inline Vector<TYPE, SIZE> operator - (const TYPE& scalar) const {
+        inline Vector<TYPE, SIZE> operator - (const Vector<TYPE, SIZE>& other) const {
             Vector<TYPE, SIZE> v(*this);
-            v -= scalar;
+            v -= other;
             return v;
         }
         TYPE dot(const Vector<TYPE, SIZE>& other) const {
@@ -75,29 +76,35 @@ class Vector {
             v[2] = data[0]*other[1] - data[1]*other[0];
             return v;
         }
-        TYPE magSq() { return dot(*this); }
-        TYPE mag() { return sqrt(magSq()); }
+        TYPE magSq() const { return dot(*this); }
+        TYPE mag() const { return sqrt(magSq()); }
 
         Vector<TYPE, SIZE> proj(Vector<TYPE, SIZE> other) { // project self onto other
-            return other * dot(other) / magSq(other);
+            return other * dot(other) / other.magSq();
         }
         Vector<TYPE, SIZE> rej(Vector<TYPE, SIZE> other) { // reject self onto other
             return operator-(proj(other));
         }
+        inline Vector<TYPE, SIZE> normal() {
+            return operator/(mag());
+        }
+        inline Vector<TYPE, SIZE> toMag(TYPE length) {
+            return operator*(length/mag()); // I don't think there's any way to avoid the sqrt here
+        }
 };
 
 // make vectors printable
-template <class TYPE, int SIZE>
+template <class TYPE, size_t SIZE>
 inline std::ostream& operator << (std::ostream& os, Vector<TYPE, SIZE> v) {
+    os << "<";
     for(int i = 0; i < SIZE; i++) {
-        if(i == 0) { os << "<"; }
+        if(i == 0) {}
         os << v[i];
         if(i < SIZE-1) {
             os << ", ";
-        } else {
-            os << ">";
         }
     }
+    os << ">";
     return os;
 }
 

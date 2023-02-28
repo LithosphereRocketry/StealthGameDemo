@@ -2,6 +2,8 @@
 #define COLLISION_H
 
 #include "Physics.h"
+#include <iostream>
+#include <math.h>
 
 /*
 Abstract collision-related types
@@ -35,12 +37,23 @@ class Collidable {
     public:
         virtual FreePathResult getFreePath(const Vector<float, 2> pos,
                                            const Vector<float, 2> dir,
-                                           float radius) const;
+                                           float radius);
 };
 
 class Collider: public Collidable {
     public:
         virtual void collide(CollidingObject* obj); // modifies obj
+};
+
+class EdgeCollider: public Collider {
+    public:
+        Vector<float, 2> position;
+        Vector<float, 2> normal;
+        EdgeCollider(Vector<float, 2> pos, Vector<float, 2> norm): position(pos), normal(norm) {}
+        FreePathResult getFreePath(const Vector<float, 2> pos,
+                                const Vector<float, 2> dir,
+                                float radius);
+        void collide(CollidingObject* const obj);
 };
 
 class CollidingObject: public PhysicsObject {
@@ -56,5 +69,11 @@ class CollidingObject: public PhysicsObject {
         }
         void step(float dt);
 };
+
+// make vectors printable
+inline std::ostream& operator << (std::ostream& os, FreePathResult fpr) {
+    os << "Path{" << sqrt(fpr.distSq) << ", " << fpr.target << "}";
+    return os;
+}
 
 #endif
