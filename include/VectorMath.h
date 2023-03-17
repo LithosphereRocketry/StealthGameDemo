@@ -2,19 +2,28 @@
 #define VECTOR_MATH_H
 #include <initializer_list>
 #include <iostream>
+#include <typeinfo>
 #include <math.h>
+
+#include <SDL2/SDL.h>
 
 // TYPE here should really be something like float or double
 template <class TYPE, size_t SIZE>
 class Vector {
     public:
         TYPE data[SIZE];
-        Vector(std::initializer_list<TYPE> lst) {
+        Vector(std::initializer_list<TYPE> lst): Vector() {
+//            For some reason this assert thinks it's non-static even if lst is declared constexpr,  why :(
+//            static_assert(lst.size() == SIZE, "Geometric vector initializer must have the correct number of elements")
+//            HOWEVER, this call seems to be inlined in such a way that strict mode at least issues a warning
             size_t pos = 0;
             for(TYPE element : lst) {
                 data[pos++] = element; // I kinda hate this
             }
         }
+        Vector() {
+            static_assert(std::is_arithmetic<TYPE>::value, "Geometric vector must have arithmetic type");
+        };
         inline TYPE operator [] (int index) const {
             return data[index];
         }
@@ -61,6 +70,11 @@ class Vector {
             v -= other;
             return v;
         }
+        inline Vector<TYPE, SIZE> operator - () const {
+            Vector<TYPE, SIZE> v(*this);
+            v *= -1;
+            return v;
+        }
         TYPE dot(const Vector<TYPE, SIZE>& other) const {
             TYPE total = 0;
             for(int i = 0; i < SIZE; i++) {
@@ -88,8 +102,15 @@ class Vector {
         inline Vector<TYPE, SIZE> normal() {
             return operator/(mag());
         }
+        inline Vector<TYPE, SIZE> orthogonal() { // counterclockwise orthogonal
+            static_assert(SIZE==2, "Orthogonal is only valid for 2D vectors");
+            return Vector<TYPE, SIZE>({-data[1], data[0]});
+        }
         inline Vector<TYPE, SIZE> toMag(TYPE length) {
             return operator*(length/mag()); // I don't think there's any way to avoid the sqrt here
+        }
+        inline Vector<TYPE, SIZE> toMagSq(TYPE lengthSq) {
+            return operator*(sqrt(lengthSq/magSq())); // I don't think there's any way to avoid the sqrt here
         }
 };
 

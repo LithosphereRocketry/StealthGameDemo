@@ -3,7 +3,7 @@
 
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_Image.h>
+#include <SDL2/SDL_image.h>
 
 #include "Caching.h"
 #include "Tile.h"
@@ -17,6 +17,9 @@ const int SCREEN_HEIGHT = 480;
 const int samplect = 1000;
 int samples;
 long int tottime;
+
+EdgeCollider edge({0, -5}, {1, 10}, 1);
+CollidingObject test(0, 0, 1, 1, 0.5, &edge);
 
 int main(int argc, char** argv) {
     SDL_Window* window = nullptr;
@@ -58,27 +61,33 @@ int main(int argc, char** argv) {
 
         SDL_Event e;
         while(SDL_PollEvent(&e)) {
-            if(e.type == SDL_QUIT) {
-                quit = true;
+            switch(e.type) {
+                case SDL_KEYUP:
+                case SDL_KEYDOWN:
+                    cout << e.key.keysym.sym;
+                    break;
+                case SDL_QUIT:
+                    quit = true;
+                    break;
+                // no default as an unrecognized event basically doesn't matter
             }
         }
-        SDL_RenderClear(renderer);
-        walls.draw(0, 0, 0.25);
-        cr.display();
-
-        auto end = chrono::steady_clock::now();
-
-        tottime += chrono::duration_cast<chrono::microseconds>(end-start).count();
-        samples++;
-        if(samples >= samplect) {
-            cout << __cplusplus << endl;
-            cout << "Time elapsed/" << samplect << " frames: "
-                 << tottime
-                 << " us\n";
-            tottime = 0;
-            samples = 0;
-        }
         
+//        SDL_RenderClear(renderer); // for some reason clearing the screen is a lot faster
+                                     // it really feels like there should be a way to not clear but leave the framebuffer untouched
+//        walls.draw(0, 0, 0.25);
+        SDL_Rect testRect = {320 + 20*test.pos[0], 240 - 20*test.pos[1], 10, 10};
+
+        SDL_RenderDrawRect(renderer, &testRect);
+        SDL_RenderDrawLine(renderer, 320 + 20*edge.position[0], 240 - 20*edge.position[1],
+            320 + 20*edge.position[0] + 20*edge.normal[0], 240 - 20*edge.position[1] - 20*edge.normal[1]);
+        test.applyForce({0, -10});
+        test.step(0.01);
+
+        cr.display();
+        while(chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - start).count() < 10) {
+            SDL_Delay(1);
+        }
     }
 
     SDL_DestroyRenderer(renderer);
