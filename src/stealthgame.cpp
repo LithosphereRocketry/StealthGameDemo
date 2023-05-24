@@ -8,6 +8,7 @@
 #include "Caching.h"
 #include "Tile.h"
 #include "Collision.h"
+#include "SDLDebug.h"
 
 using namespace std;
 
@@ -18,10 +19,17 @@ const int samplect = 1000;
 int samples;
 long int tottime;
 
-EdgeCollider edge({0, -5}, {1, 10}, 1);
-CollidingObject test(0, 0, 1, 1, 0.5, &edge);
+EdgeCollider edge({0, -5}, {1, 10});
+EdgeCollider wall({5, -5}, {-3, 1});
+SegmentCollider segment({-1, -2}, {2, 1});
+CollisionGroup grp;
+CollidingObject test(0, 10, 1, 1, {0.8, 0.9}, &grp);
 
 int main(int argc, char** argv) {
+    grp.colliders.push_back(&edge);
+    grp.colliders.push_back(&wall);
+    grp.colliders.push_back(&segment);
+
     SDL_Window* window = nullptr;
 
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -56,7 +64,7 @@ int main(int argc, char** argv) {
     walls.fillRect(&floor, 1, 1, 8, 8);
 
     bool quit = false;
-    while(quit == false) {
+    while(!quit) {
         auto start = chrono::steady_clock::now();
 
         SDL_Event e;
@@ -73,20 +81,27 @@ int main(int argc, char** argv) {
             }
         }
         
-//        SDL_RenderClear(renderer); // for some reason clearing the screen is a lot faster
+        //SDL_RenderClear(renderer); // for some reason clearing the screen is a lot faster
                                      // it really feels like there should be a way to not clear but leave the framebuffer untouched
-//        walls.draw(0, 0, 0.25);
+        //walls.draw(0, 0, 0.25);
         SDL_Rect testRect = {320 + 20*test.pos[0], 240 - 20*test.pos[1], 10, 10};
 
         SDL_RenderDrawRect(renderer, &testRect);
         SDL_RenderDrawLine(renderer, 320 + 20*edge.position[0], 240 - 20*edge.position[1],
             320 + 20*edge.position[0] + 20*edge.normal[0], 240 - 20*edge.position[1] - 20*edge.normal[1]);
-        test.applyForce({0, -10});
+        
+        
+        test.applyForce({0, -1});
         test.step(0.01);
 
         cr.display();
+        bool idling = false;
         while(chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - start).count() < 10) {
+            idling = true;
             SDL_Delay(1);
+        }
+        if(!idling) {
+            cout << "Warning: frames dropped\n";
         }
     }
 
