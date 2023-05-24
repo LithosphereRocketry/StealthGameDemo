@@ -65,13 +65,8 @@ class Collider: public Collidable {
 class CollidingObject: public PhysicsObject {
     public:
         float radius;
-        float elasticity;
-        Collider* environment;
-        CollidingObject(float x, float y, float m, float r, float e, Collider* env): PhysicsObject(x, y, m) {
-            radius = r;
-            elasticity = e;
-            environment = env;
-        }
+        Collidable* environment;
+        CollidingObject(float x, float y, float m, float r, Elasticity e, Collidable* env): PhysicsObject(m, x, y, e), radius(r), environment(env) {}
         void stepVelocity(float dt);
 };
 
@@ -89,8 +84,8 @@ class EdgeCollider: public Collider {
     public:
         Vector<float, 2> position;
         Vector<float, 2> normal;
-        float elasticity;
-        EdgeCollider(Vector<float, 2> pos, Vector<float, 2> norm, float e):
+        Elasticity elasticity;
+        EdgeCollider(Vector<float, 2> pos, Vector<float, 2> norm, Elasticity e = PhysicsObject::ELAS_DEFAULT):
             position(pos), normal(norm), elasticity(e) {}
         FreePathResult getFreePath(const Vector<float, 2> pos,
                                 const Vector<float, 2> dir,
@@ -108,9 +103,13 @@ class SegmentCollider: public Collider {
     public:
         Vector<float, 2> position;
         Vector<float, 2> offset;
-        float elasticity;
-        SegmentCollider(Vector<float, 2> pos, Vector<float, 2> offs, float e):
+        Elasticity elasticity;
+        SegmentCollider(Vector<float, 2> pos, Vector<float, 2> offs, Elasticity e = PhysicsObject::ELAS_DEFAULT):
             position(pos), offset(offs), elasticity(e) {}
+        FreePathResult getFreePath(const Vector<float, 2> pos,
+                                const Vector<float, 2> dir,
+                                float radius);
+        void collide(CollidingObject* const obj);
 };
 
 /**

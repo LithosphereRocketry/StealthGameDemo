@@ -14,11 +14,11 @@ void CollidingObject::stepVelocity(float dt) {
     }
 }
  // this feels like it should be able to be const but it sorta isn't because it gives other things permission to modify the object
-FreePathResult EdgeCollider::getFreePath(const Vector<float, 2> pos, const Vector<float, 2> dir, float radius) {
-    if(dir.dot(normal) > 0) {
+FreePathResult EdgeCollider::getFreePath(const Vector<float, 2> objpos, const Vector<float, 2> dir, float radius) {
+    Vector<float, 2> ctroffs = (objpos - position).proj(normal);
+    if(dir.dot(ctroffs) > 0) {
         return {INFINITY, this};
     }
-    Vector<float, 2> ctroffs = (pos-position).proj(normal);
     Vector<float, 2> offs = ctroffs - ctroffs.toMag(radius); // offset the line 1 radius closer
     if(offs.magSq() == 0 || dir.magSq() == 0) {
         return {0, this}; // this should almost never happen
@@ -28,9 +28,30 @@ FreePathResult EdgeCollider::getFreePath(const Vector<float, 2> pos, const Vecto
 }
 
 void EdgeCollider::collide(CollidingObject* const obj) {
-    // really I should do this in a more pixel-perfect way
-    // e.g. move to extent of free path, recalculate collision with remaining step
-    // but this is good enough for now
-    
-    obj->applyBounce(normal.toMag(elasticity*obj->elasticity));
+    obj->applyBounce(normal, elasticity);
+}
+
+FreePathResult SegmentCollider::getFreePath(const Vector<float, 2> pos, const Vector<float, 2> dir, float radius) {
+    Vector<float, 2> ctrdiff = pos - position;
+    Vector<float, 2> ctroffs = ctrdiff.rej(offset);
+    if(dir.dot(ctroffs) > 0) {
+        return {INFINITY, this};
+    }
+    Vector<float, 2> radoffs = ctroffs.toMag(radius);
+    Vector<float, 2> offs = ctroffs - radoffs;
+    Vector<float, 2> diff = ctrdiff - radoffs; // offset the line 1 radius closer
+    float distsq = dir.magSq()*powf(offs.magSq()/offs.dot(dir), 2);
+    Vector<float, 2> along = diff + dir.toMagSq(distsq);
+    float alongdist = along.dot(offset.normal());
+    if(offs.magSq() == 0 || dir.magSq() == 0) {
+        return {0, this}; // this should almost never happen
+    } else if(alongdist < 0 || alongdist > radius) {
+        return {INFINITY, this};
+    } else {
+        return {distsq, this};
+    }
+}
+
+void SegmentCollider::collide(CollidingObject* const obj) {
+    obj->applyBounce(offset.orthogonal(), elasticity);
 }
