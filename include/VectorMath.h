@@ -93,23 +93,23 @@ class Vector {
         TYPE magSq() const { return dot(*this); }
         TYPE mag() const { return sqrt(magSq()); }
 
-        Vector<TYPE, SIZE> proj(Vector<TYPE, SIZE> other) { // project self onto other
+        Vector<TYPE, SIZE> proj(Vector<TYPE, SIZE> other) const { // project self onto other
             return other * dot(other) / other.magSq();
         }
-        Vector<TYPE, SIZE> rej(Vector<TYPE, SIZE> other) { // reject self onto other
+        Vector<TYPE, SIZE> rej(Vector<TYPE, SIZE> other) const { // reject self onto other
             return operator-(proj(other));
         }
-        inline Vector<TYPE, SIZE> normal() {
+        inline Vector<TYPE, SIZE> normal() const {
             return operator/(mag());
         }
-        inline Vector<TYPE, SIZE> orthogonal() { // counterclockwise orthogonal
+        inline Vector<TYPE, SIZE> orthogonal() const { // counterclockwise orthogonal
             static_assert(SIZE==2, "Orthogonal is only valid for 2D vectors");
             return Vector<TYPE, SIZE>({-data[1], data[0]});
         }
-        inline Vector<TYPE, SIZE> toMag(TYPE length) {
+        inline Vector<TYPE, SIZE> toMag(TYPE length) const {
             return operator*(length/mag()); // I don't think there's any way to avoid the sqrt here
         }
-        inline Vector<TYPE, SIZE> toMagSq(TYPE lengthSq) {
+        inline Vector<TYPE, SIZE> toMagSq(TYPE lengthSq) const {
             return operator*(sqrt(lengthSq/magSq())); // I don't think there's any way to avoid the sqrt here
         }
 };
