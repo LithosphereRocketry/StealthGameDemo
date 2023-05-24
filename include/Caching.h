@@ -43,7 +43,6 @@ class CachedRenderer {
         }
         inline void display() { SDL_RenderPresent(target); }
     private:
-        static constexpr bool weirdfalse = false;
         static std::unordered_map<std::string, SDL_Surface*> surfaceCache;
         std::unordered_map<SDL_Surface*, SDL_Texture*> textureCache;
 };
