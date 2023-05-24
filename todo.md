@@ -5,7 +5,7 @@
     * Move speed from the new speed to the old speed pool proportional to the distance traveled.
     * Reflect the object but do not reflect the new speed pool.
     * Repeat the process.
-    This won't give pixel-perfect accuracy, but it should allow acceleration applied directly into a surface (e.g. gravity) to be properly dissipated.git
+    This won't give pixel-perfect accuracy, but it should allow acceleration applied directly into a surface (e.g. gravity) to be properly dissipated.
 * Better testing of physics edge cases (pun intended)
 * Debug visualization
 * Keyboard input
