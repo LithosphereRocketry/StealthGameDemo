@@ -17,6 +17,14 @@ SDL_Point toScreenSpace(SDL_Renderer* rend, Vector<float, 2> pos, float px_unit)
     return {int(posscr[0]), int(posscr[1])};
 }
 
+void drawInfLine(SDL_Renderer* rend, Vector<float, 2> origin, Vector<float, 2> normal, Vector<float, 2> campos, float px_unit) {
+    SDL_Point points[] = {
+        toScreenSpace(rend, origin-normal.orthogonal()-campos, px_unit),
+        toScreenSpace(rend, origin+normal.orthogonal()-campos, px_unit)
+    };
+    SDL_RenderDrawLines(rend, points, 2);
+}
+
 void drawVector(SDL_Renderer* rend, Vector<float, 2> vec, Vector<float, 2> origin, Vector<float, 2> campos, float px_unit) {
     Vector<float, 2> corner1 = origin + vec*0.9 + vec.orthogonal()*0.1; 
     Vector<float, 2> corner2 = origin + vec*0.9 - vec.orthogonal()*0.1;

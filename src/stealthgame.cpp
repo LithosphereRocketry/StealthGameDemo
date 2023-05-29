@@ -54,14 +54,14 @@ int main(int argc, char** argv) {
     SDL_Rect floorbound = {64, 32, 16, 32};
     SDL_Rect tilebounds = {0, -100, 100, 200};
 
-    TilePrototype wall("tilesheet.png", &wallbound, &tilebounds);
-    wall.load(&cr);
+    TilePrototype walltile("tilesheet.png", &wallbound, &tilebounds);
+    walltile.load(&cr);
 
     TilePrototype floor("tilesheet.png", &floorbound, &tilebounds);
     floor.load(&cr);
 
     TileGrid walls = TileGrid(1000, 1000, 100, 100);
-    walls.fill(&wall);
+    walls.fill(&walltile);
     walls.fillRect(&floor, 1, 1, 8, 8);
 
     bool quit = false;
@@ -72,9 +72,8 @@ int main(int argc, char** argv) {
                                      // it really feels like there should be a way to not clear but leave the framebuffer untouched
         //walls.draw(0, 0, 0.25);
         drawPoint(renderer, test.pos, {0, 0}, 20, test.radius);
-        
-        SDL_RenderDrawLine(renderer, 320 + 20*edge.position[0], 240 - 20*edge.position[1],
-            320 + 20*edge.position[0] + 20*edge.normal[0], 240 - 20*edge.position[1] - 20*edge.normal[1]);
+        drawInfLine(renderer, edge.position, edge.normal, {0, 0}, 20);
+        drawInfLine(renderer, wall.position, wall.normal, {0, 0}, 20);
         
         test.applyForce({0, -1});
 

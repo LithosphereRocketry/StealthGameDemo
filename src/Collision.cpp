@@ -27,6 +27,9 @@ FreePathResult EdgeCollider::getFreePath(const Vector<float, 2> objpos, const Ve
         return {INFINITY, this};
     }
     Vector<float, 2> offs = ctroffs - ctroffs.toMag(radius); // offset the line 1 radius closer
+    if(dir.dot(offs) > 0) {
+        return {0, this};
+    }
     if(offs.magSq() == 0 || dir.magSq() == 0) {
         return {0, this}; // this should almost never happen
     } else {

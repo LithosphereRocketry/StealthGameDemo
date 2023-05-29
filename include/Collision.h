@@ -64,7 +64,6 @@ class Collider: public Collidable {
 
 class CollidingObject: public PhysicsObject {
     public:
-        static constexpr float epsilon = 0.001; // Steps less than this during collision are rounded to 0 to avoid clipping
         float radius;
         Collidable* environment;
         CollidingObject(float x, float y, float m, float r, Elasticity e, Collidable* env): PhysicsObject(m, x, y, e), radius(r), environment(env) {}
