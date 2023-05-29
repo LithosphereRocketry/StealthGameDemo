@@ -2,15 +2,22 @@
 #include <iostream>
 
 void CollidingObject::stepVelocity(float dt) {
-    FreePathResult f = environment->getFreePath(pos, vel, radius);
-    Vector<float, 2> move = vel*dt;
+    Vector<float, 2> move = (vel + pendingVel)*dt;
+    FreePathResult f = environment->getFreePath(pos, move, radius);
     if(move.magSq() <= f.distSq) {
+        vel += pendingVel;
         pos += move;
     } else {
+        printf("Got to %f of %f\n", sqrtf(f.distSq), move.mag());
+        // Roll forward to collision
         pos += move.toMagSq(f.distSq);
         f.target->collide(this);
-        float newdt = dt*(1 - sqrtf(f.distSq/move.magSq()));
-        stepVelocity(newdt);
+        float mvfrac = sqrtf(f.distSq/move.magSq());
+        // Partition up the change in velocity this frame to before & after the collision
+        vel += pendingVel*mvfrac;
+        pendingVel *= 1 - mvfrac;
+        // Continue with the rest of the motion
+        stepVelocity(dt * (1.0f - mvfrac));
     }
 }
  // this feels like it should be able to be const but it sorta isn't because it gives other things permission to modify the object

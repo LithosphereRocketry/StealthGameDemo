@@ -11,7 +11,6 @@ struct Elasticity {
 
 // units roughly m/kg/s
 class PhysicsObject {
-    static float zeroThresh = 0.1;
     public:
         static constexpr Elasticity ELAS_DEFAULT = {1, 1};
         float mass;
@@ -37,16 +36,15 @@ class PhysicsObject {
         }
     protected:
         inline void stepForces(float dt) {
-            vel += pendingAccel * dt;
+            pendingVel = pendingAccel * dt;
         }
         virtual void stepVelocity(float dt) {
-            if(vel.magSq() < zeroThresh*zeroThresh) {
-                vel = {0, 0};
-            }
+            vel += pendingVel;
             pos += vel * dt; 
         }
-    private:
+    protected:
         Vector<float, 2> pendingAccel;
+        Vector<float, 2> pendingVel;
 };
 
 #endif

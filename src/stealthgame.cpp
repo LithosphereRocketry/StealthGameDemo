@@ -23,9 +23,10 @@ EdgeCollider edge({0, -5}, {1, 10});
 EdgeCollider wall({5, -5}, {-3, 1});
 SegmentCollider segment({-1, -2}, {2, 1});
 CollisionGroup grp;
-CollidingObject test(0, 10, 1, 1, {0.8, 0.9}, &grp);
+CollidingObject test(0, 10, 1, 1, {0.9, 1}, &grp);
 
 int main(int argc, char** argv) {
+
     grp.colliders.push_back(&edge);
     grp.colliders.push_back(&wall);
     grp.colliders.push_back(&segment);
@@ -67,12 +68,23 @@ int main(int argc, char** argv) {
     while(!quit) {
         auto start = chrono::steady_clock::now();
 
+        //SDL_RenderClear(renderer); // for some reason clearing the screen is a lot faster
+                                     // it really feels like there should be a way to not clear but leave the framebuffer untouched
+        //walls.draw(0, 0, 0.25);
+        drawPoint(renderer, test.pos, {0, 0}, 20, test.radius);
+        
+        SDL_RenderDrawLine(renderer, 320 + 20*edge.position[0], 240 - 20*edge.position[1],
+            320 + 20*edge.position[0] + 20*edge.normal[0], 240 - 20*edge.position[1] - 20*edge.normal[1]);
+        
+        test.applyForce({0, -1});
+
         SDL_Event e;
         while(SDL_PollEvent(&e)) {
             switch(e.type) {
                 case SDL_KEYUP:
+                    break;
                 case SDL_KEYDOWN:
-                    cout << e.key.keysym.sym;
+                    test.step(0.05);
                     break;
                 case SDL_QUIT:
                     quit = true;
@@ -81,22 +93,11 @@ int main(int argc, char** argv) {
             }
         }
         
-        //SDL_RenderClear(renderer); // for some reason clearing the screen is a lot faster
-                                     // it really feels like there should be a way to not clear but leave the framebuffer untouched
-        //walls.draw(0, 0, 0.25);
-        SDL_Rect testRect = {320 + 20*test.pos[0], 240 - 20*test.pos[1], 10, 10};
-
-        SDL_RenderDrawRect(renderer, &testRect);
-        SDL_RenderDrawLine(renderer, 320 + 20*edge.position[0], 240 - 20*edge.position[1],
-            320 + 20*edge.position[0] + 20*edge.normal[0], 240 - 20*edge.position[1] - 20*edge.normal[1]);
         
-        
-        test.applyForce({0, -1});
-        test.step(0.01);
 
         cr.display();
         bool idling = false;
-        while(chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - start).count() < 10) {
+        while(chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - start).count() < 50) {
             idling = true;
             SDL_Delay(1);
         }

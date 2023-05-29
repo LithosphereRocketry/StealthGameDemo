@@ -6,6 +6,7 @@
     * Reflect the object but do not reflect the new speed pool.
     * Repeat the process.
     This won't give pixel-perfect accuracy, but it should allow acceleration applied directly into a surface (e.g. gravity) to be properly dissipated.
+    * Update on this: Doing the above (more or less) caused problems with objects clipping through the ground, I think due to rounding errors. Those were fixed with an epsilon, but there's still more problems: slippery objects on shallow slopes don't slide, since their free-path movement gets epsilonned to 0; additionally, slippery objects seem to be able to clip through surfaces somehow.
 * Better testing of physics edge cases (pun intended)
 * Debug visualization
 * Keyboard input
@@ -18,3 +19,4 @@
 * runtime tile type loading???
 * Test level
 * Enemy logic/alerting system
+* Make vectormath respect "wrong order" scalar mult
