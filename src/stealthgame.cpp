@@ -12,6 +12,8 @@
 
 using namespace std;
 
+#define TARGET_FRAMERATE 100
+
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 
@@ -21,15 +23,19 @@ long int tottime;
 
 EdgeCollider edge({0, -5}, {1, 10});
 EdgeCollider wall({5, -5}, {-3, 1});
+EdgeCollider roof({-5, 0}, {1, -1});
+EdgeCollider flr({0, -1}, {0, 1});
 SegmentCollider segment({-1, -2}, {2, 1});
 CollisionGroup grp;
-CollidingObject test(0, 10, 1, 1, {0.9, 1}, &grp);
+CollidingObject test(0, 3, 1, 1, {1, 1}, &grp);
 
 int main(int argc, char** argv) {
 
     grp.colliders.push_back(&edge);
     grp.colliders.push_back(&wall);
-    grp.colliders.push_back(&segment);
+    grp.colliders.push_back(&roof);
+//    grp.colliders.push_back(&segment);
+    grp.colliders.push_back(&flr);
 
     SDL_Window* window = nullptr;
 
@@ -45,7 +51,6 @@ int main(int argc, char** argv) {
     }
 
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0xFF, 0xFF);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     CachedRenderer cr = CachedRenderer(renderer);
@@ -63,19 +68,24 @@ int main(int argc, char** argv) {
     TileGrid walls = TileGrid(1000, 1000, 100, 100);
     walls.fill(&walltile);
     walls.fillRect(&floor, 1, 1, 8, 8);
-
     bool quit = false;
     while(!quit) {
         auto start = chrono::steady_clock::now();
 
-        //SDL_RenderClear(renderer); // for some reason clearing the screen is a lot faster
+        SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
+        SDL_RenderClear(renderer); // for some reason clearing the screen is a lot faster
                                      // it really feels like there should be a way to not clear but leave the framebuffer untouched
         //walls.draw(0, 0, 0.25);
+        SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0xFF, 0xFF);
         drawPoint(renderer, test.pos, {0, 0}, 20, test.radius);
         drawInfLine(renderer, edge.position, edge.normal, {0, 0}, 20);
         drawInfLine(renderer, wall.position, wall.normal, {0, 0}, 20);
+        drawInfLine(renderer, roof.position, roof.normal, {0, 0}, 20);
+        drawInfLine(renderer, flr.position, flr.normal, {0, 0}, 20);
         
-        test.applyForce({0, -1});
+        cout << test.getTE(9.8) << endl;
+        test.applyForce({0, -9.8});
+        test.step(1.0f/TARGET_FRAMERATE);
 
         SDL_Event e;
         while(SDL_PollEvent(&e)) {
@@ -83,7 +93,6 @@ int main(int argc, char** argv) {
                 case SDL_KEYUP:
                     break;
                 case SDL_KEYDOWN:
-                    test.step(0.05);
                     break;
                 case SDL_QUIT:
                     quit = true;
@@ -92,11 +101,10 @@ int main(int argc, char** argv) {
             }
         }
         
-        
 
         cr.display();
         bool idling = false;
-        while(chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - start).count() < 50) {
+        while(chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - start).count() < 1000/TARGET_FRAMERATE) {
             idling = true;
             SDL_Delay(1);
         }

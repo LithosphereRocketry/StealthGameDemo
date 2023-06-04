@@ -18,11 +18,20 @@ SDL_Point toScreenSpace(SDL_Renderer* rend, Vector<float, 2> pos, float px_unit)
 }
 
 void drawInfLine(SDL_Renderer* rend, Vector<float, 2> origin, Vector<float, 2> normal, Vector<float, 2> campos, float px_unit) {
-    SDL_Point points[] = {
-        toScreenSpace(rend, origin-normal.orthogonal()-campos, px_unit),
-        toScreenSpace(rend, origin+normal.orthogonal()-campos, px_unit)
-    };
-    SDL_RenderDrawLines(rend, points, 2);
+    SDL_Point originpt = toScreenSpace(rend, origin-campos, px_unit);
+    SDL_Point offspt = toScreenSpace(rend, origin+normal.orthogonal()-campos, px_unit);
+    SDL_Point scroffs = {offspt.x-originpt.x, offspt.y-originpt.y};
+    int w, h;
+    SDL_GetRendererOutputSize(rend, &w, &h);
+    if(scroffs.y == 0) {
+        SDL_Point points[] = {{0, originpt.y}, {w, originpt.y}};
+        SDL_RenderDrawLines(rend, points, 2);
+    } else {
+        SDL_Point toppt = {originpt.x - int(originpt.y * scroffs.x/scroffs.y), 0};
+        SDL_Point botpt = {originpt.x - int((originpt.y - h) * scroffs.x/scroffs.y), h};
+        SDL_Point points[] = {toppt, botpt};
+        SDL_RenderDrawLines(rend, points, 2);
+    }
 }
 
 void drawVector(SDL_Renderer* rend, Vector<float, 2> vec, Vector<float, 2> origin, Vector<float, 2> campos, float px_unit) {

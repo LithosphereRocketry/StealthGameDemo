@@ -16,6 +16,7 @@ class PhysicsObject {
         float mass;
         Vector<float, 2> pos;
         Vector<float, 2> vel;
+        Vector<float, 2> pendingVel;
         Elasticity elas;
         PhysicsObject(float m, float x = 0, float y = 0, Elasticity elasticity = ELAS_DEFAULT):
             mass(m),
@@ -34,9 +35,14 @@ class PhysicsObject {
         inline void applyForce(Vector<float, 2> f) {
             pendingAccel += f/mass;
         }
+        float getTE(float g) {
+            std::cout << pos << vel;
+            return 0.5f*mass*(vel.magSq()) + mass*g*pos[1];
+        }
     protected:
         inline void stepForces(float dt) {
             pendingVel = pendingAccel * dt;
+            pendingAccel = {0, 0};
         }
         virtual void stepVelocity(float dt) {
             vel += pendingVel;
@@ -44,7 +50,6 @@ class PhysicsObject {
         }
     protected:
         Vector<float, 2> pendingAccel;
-        Vector<float, 2> pendingVel;
 };
 
 #endif

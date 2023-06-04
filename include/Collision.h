@@ -26,7 +26,15 @@ it needs to travel this frame, it steps as normal. Otherwise, things get interes
 class CollidingObject;
 class Collider;
 
+enum FreePathType {
+    FREE,
+    COLLIDING,
+    STUCK,
+    FALLBACK
+};
+
 struct FreePathResult {
+    FreePathType type;
     float distSq;
     Collider* target;
 };
@@ -60,6 +68,9 @@ class Collider: public Collidable {
          * obj: The object colliding with this collider. This object will usually be modified.
         */
         virtual void collide(CollidingObject* obj); // modifies obj
+        virtual void slide(CollidingObject* obj);
+    protected:
+        static constexpr float SKIM_EPSILON = 1e-6; // the minimum distance an object may intrude into a surface and still be "free to travel"
 };
 
 class CollidingObject: public PhysicsObject {
@@ -68,6 +79,7 @@ class CollidingObject: public PhysicsObject {
         Collidable* environment;
         CollidingObject(float x, float y, float m, float r, Elasticity e, Collidable* env): PhysicsObject(m, x, y, e), radius(r), environment(env) {}
         void stepVelocity(float dt);
+        void stepCollisions(float dt, Collider* stuck);
 };
 
 /**
@@ -91,6 +103,7 @@ class EdgeCollider: public Collider {
                                 const Vector<float, 2> dir,
                                 float radius);
         void collide(CollidingObject* const obj);
+        void slide(CollidingObject* const obj);
 };
 
 /**
@@ -110,6 +123,7 @@ class SegmentCollider: public Collider {
                                 const Vector<float, 2> dir,
                                 float radius);
         void collide(CollidingObject* const obj);
+        void slide(CollidingObject* const obj);
 };
 
 /**
@@ -128,7 +142,7 @@ class CollisionGroup: public Collidable {
         FreePathResult getFreePath(const Vector<float, 2> pos,
                                            const Vector<float, 2> dir,
                                            float radius) {
-            FreePathResult result = {INFINITY, nullptr};
+            FreePathResult result = {FREE, INFINITY, nullptr};
             for(int i = 0; i < colliders.size(); i++) {
                 FreePathResult newres = colliders[i]->getFreePath(pos, dir, radius);
                 if(newres.distSq < result.distSq) {
