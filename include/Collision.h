@@ -216,11 +216,9 @@ class CollisionGroup: public Collidable {
  * object must inherit from Collidable and have a copy constructor.
 */
         template<class TYPE>
-        TYPE* add(TYPE obj) {
-            static_assert(std::is_base_of<Collidable, TYPE>::value,
-                                "Member of collision group must be collidable");
-            std::unique_ptr<Collidable> owned = std::make_unique<TYPE>(obj);
-            // this should always be a safe cast
+        TYPE* add(TYPE&& obj) {
+            std::unique_ptr<Collidable> owned = 
+                    std::make_unique<TYPE>(std::move(obj));
             TYPE* ptr = (TYPE*) owned.get();
             colliders.push_back(std::move(owned));
             return ptr;
@@ -237,7 +235,8 @@ class CollisionGroup: public Collidable {
 */
 class CollisionPoly: public CollisionGroup {
     public:
-        CollisionPoly(std::vector<Vector<float, 2>> vertices, Elasticity elas) {
+        CollisionPoly(std::vector<Vector<float, 2>> vertices,
+                            Elasticity elas = PhysicsObject::ELAS_DEFAULT) {
             for(int i = 0; i < vertices.size(); i++) {
                 add(SegmentCollider(vertices[i],
                     vertices[(i+1)%vertices.size()]-vertices[i], elas));

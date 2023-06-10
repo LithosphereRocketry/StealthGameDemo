@@ -21,21 +21,20 @@ const int samplect = 1000;
 int samples;
 long int tottime;
 
-CircleCollider ball({1, -3}, 3);
-EdgeCollider roof({-5, 0}, {1, -1});
-EdgeCollider flr({0, -1}, {0, 1});
-SegmentCollider segment({-1, -2}, {2, -1});
 CollisionGroup grp;
 CollidingObject test(0, 10, 1, 1, {0.9, 0.9}, &grp);
+vector<Vector<float, 2>> polygon = {
+    {-2, -3},
+    {-1, 0},
+    {1, -3},
+    {2, -6},
+    {-1, -7}
+};
 
 int main(int argc, char** argv) {
-//    grp.colliders.push_back(&ball);
     EdgeCollider* edge = grp.add(EdgeCollider({0, -5}, {1, 10}));
     EdgeCollider* wall = grp.add(EdgeCollider({5, -5}, {-3, 1}));
-//    grp.colliders.push_back(&roof);
-//    grp.colliders.push_back(&segment);
-//    grp.colliders.push_back(&flr);
-
+    CollisionPoly* poly = grp.add(CollisionPoly(polygon));
     SDL_Window* window = nullptr;
 
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -80,16 +79,11 @@ int main(int argc, char** argv) {
         // for some reason clearing the screen is a lot faster
         // it really feels like there should be a way to not clear but leave the
         // framebuffer untouched but hey this is what the internet recommends
-        //walls.draw(0, 0, 0.25);
         SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0xFF, 0xFF);
         drawPoint(renderer, test.pos, {0, 0}, 20, test.radius);
-        drawPoint(renderer, ball.position, {0, 0}, 20, ball.radius);
         drawInfLine(renderer, edge->position, edge->normal, {0, 0}, 20);
         drawInfLine(renderer, wall->position, wall->normal, {0, 0}, 20);
-//        drawInfLine(renderer, roof.position, roof.normal, {0, 0}, 20);
-//        drawInfLine(renderer, flr.position, flr.normal, {0, 0}, 20);
-        drawVector(renderer, segment.offset, segment.position, {0, 0}, 20);
-
+        drawPoly(renderer, polygon, {0, 0}, 20);
         SDL_Event e;
         while(SDL_PollEvent(&e)) {
             switch(e.type) {

@@ -61,3 +61,14 @@ void drawPoint(SDL_Renderer* rend, Vector<float, 2> pos,
     }
     SDL_RenderDrawLines(rend, points, SDL_DEBUG_CIRCLE_PTS + 1);
 }
+
+void drawPoly(SDL_Renderer* rend, std::vector<Vector<float, 2>> verts,
+            Vector<float, 2> campos, float px_unit) {
+    SDL_Point* points = new SDL_Point[verts.size()+1];
+    for(int i = 0; i < verts.size(); i++) {
+        points[i] = toScreenSpace(rend, verts[i]-campos, px_unit);
+    }
+    points[verts.size()] = points[0];
+    SDL_RenderDrawLines(rend, points, verts.size()+1);
+    delete[] points;
+}
