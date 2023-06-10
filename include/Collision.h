@@ -213,10 +213,12 @@ class CollisionGroup: public Collidable {
  * 
  * Adds a collidable to the group. Makes a copy of the object to maintain
  * ownership; returns a persistent pointer to the object. The instantiated
- * object must inherit from Collidable and have a copy constructor.
+ * object must inherit from Collidable.
 */
         template<class TYPE>
-        TYPE* add(TYPE&& obj) {
+        TYPE* add(TYPE obj) {
+            static_assert(std::is_base_of<Collidable, TYPE>::value,
+                    "Collision group members must inherit from Collidable");
             std::unique_ptr<Collidable> owned = 
                     std::make_unique<TYPE>(std::move(obj));
             TYPE* ptr = (TYPE*) owned.get();
