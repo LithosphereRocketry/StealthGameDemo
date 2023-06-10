@@ -7,7 +7,8 @@
 /**
  * Draws a vector based on the given viewport information, with pretty arrow
 */
-SDL_Point toScreenSpace(SDL_Renderer* rend, Vector<float, 2> pos, float px_unit) {
+SDL_Point toScreenSpace(SDL_Renderer* rend, Vector<float, 2> pos,
+                                                                float px_unit) {
     int w, h;
     SDL_GetRendererOutputSize(rend, &w, &h);
     Vector<float, 2> scrctr = {w/2.0f, h/2.0f};
@@ -17,7 +18,8 @@ SDL_Point toScreenSpace(SDL_Renderer* rend, Vector<float, 2> pos, float px_unit)
     return {int(posscr[0]), int(posscr[1])};
 }
 
-void drawInfLine(SDL_Renderer* rend, Vector<float, 2> origin, Vector<float, 2> normal, Vector<float, 2> campos, float px_unit) {
+void drawInfLine(SDL_Renderer* rend, Vector<float, 2> origin,
+            Vector<float, 2> normal, Vector<float, 2> campos, float px_unit) {
     SDL_Point originpt = toScreenSpace(rend, origin-campos, px_unit);
     SDL_Point offspt = toScreenSpace(rend, origin+normal.orthogonal()-campos, px_unit);
     SDL_Point scroffs = {offspt.x-originpt.x, offspt.y-originpt.y};
@@ -27,14 +29,15 @@ void drawInfLine(SDL_Renderer* rend, Vector<float, 2> origin, Vector<float, 2> n
         SDL_Point points[] = {{0, originpt.y}, {w, originpt.y}};
         SDL_RenderDrawLines(rend, points, 2);
     } else {
-        SDL_Point toppt = {originpt.x - int(originpt.y * scroffs.x/scroffs.y), 0};
-        SDL_Point botpt = {originpt.x - int((originpt.y - h) * scroffs.x/scroffs.y), h};
+        SDL_Point toppt = {originpt.x - originpt.y*scroffs.x/scroffs.y, 0};
+        SDL_Point botpt = {originpt.x - (originpt.y-h)*scroffs.x/scroffs.y, h};
         SDL_Point points[] = {toppt, botpt};
         SDL_RenderDrawLines(rend, points, 2);
     }
 }
 
-void drawVector(SDL_Renderer* rend, Vector<float, 2> vec, Vector<float, 2> origin, Vector<float, 2> campos, float px_unit) {
+void drawVector(SDL_Renderer* rend, Vector<float, 2> vec,
+            Vector<float, 2> origin, Vector<float, 2> campos, float px_unit) {
     Vector<float, 2> corner1 = origin + vec*0.9 + vec.orthogonal()*0.1; 
     Vector<float, 2> corner2 = origin + vec*0.9 - vec.orthogonal()*0.1;
     SDL_Point points[] = {
@@ -47,12 +50,14 @@ void drawVector(SDL_Renderer* rend, Vector<float, 2> vec, Vector<float, 2> origi
     SDL_RenderDrawLines(rend, points, 5);
 }
 
-void drawPoint(SDL_Renderer* rend, Vector<float, 2> pos, Vector<float, 2> campos, float px_unit, float radius) {
+void drawPoint(SDL_Renderer* rend, Vector<float, 2> pos,
+                        Vector<float, 2> campos, float px_unit, float radius) {
     SDL_Point points[SDL_DEBUG_CIRCLE_PTS + 1];
     SDL_Point center = toScreenSpace(rend, pos-campos, px_unit);
     for(int i = 0; i < SDL_DEBUG_CIRCLE_PTS + 1; i++) {
         float angle = i*2*M_PI / SDL_DEBUG_CIRCLE_PTS;
-        points[i] = {center.x + radius*px_unit*sinf(angle), center.y + radius*px_unit*cosf(angle)};
+        points[i] = {center.x + int(radius*px_unit*sinf(angle)),
+                                int(center.y + radius*px_unit*cosf(angle))};
     }
     SDL_RenderDrawLines(rend, points, SDL_DEBUG_CIRCLE_PTS + 1);
 }

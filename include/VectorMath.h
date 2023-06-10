@@ -13,16 +13,20 @@ class Vector {
     public:
         TYPE data[SIZE];
         Vector(std::initializer_list<TYPE> lst): Vector() {
-//            For some reason this assert thinks it's non-static even if lst is declared constexpr,  why :(
-//            static_assert(lst.size() == SIZE, "Geometric vector initializer must have the correct number of elements")
-//            HOWEVER, this call seems to be inlined in such a way that strict mode at least issues a warning
+//          For some reason this assert thinks it's non-static even if lst is 
+//          declared constexpr,  why :(
+//          static_assert(lst.size() == SIZE,
+//      "Geometric vector initializer must have the correct number of elements")
+//          HOWEVER, this call seems to be inlined in such a way that strict
+//          mode at least issues a warning
             size_t pos = 0;
             for(TYPE element : lst) {
                 data[pos++] = element; // I kinda hate this
             }
         }
         Vector() {
-            static_assert(std::is_arithmetic<TYPE>::value, "Geometric vector must have arithmetic type");
+            static_assert(std::is_arithmetic<TYPE>::value,
+                "Geometric vector must have arithmetic type");
         };
         inline TYPE operator [] (int index) const {
             return data[index];
@@ -55,7 +59,8 @@ class Vector {
                 data[i] += other[i];
             }
         }
-        inline Vector<TYPE, SIZE> operator + (const Vector<TYPE, SIZE>& other) const {
+        inline Vector<TYPE, SIZE> operator + (const Vector<TYPE, SIZE>& other)
+                    const {
             Vector<TYPE, SIZE> v(*this);
             v += other;
             return v;
@@ -65,7 +70,8 @@ class Vector {
                 data[i] -= other[i];
             }
         }
-        inline Vector<TYPE, SIZE> operator - (const Vector<TYPE, SIZE>& other) const {
+        inline Vector<TYPE, SIZE> operator - (const Vector<TYPE, SIZE>& other)
+                    const {
             Vector<TYPE, SIZE> v(*this);
             v -= other;
             return v;
@@ -83,7 +89,8 @@ class Vector {
             return total;
         }
         Vector<TYPE, SIZE> cross(const Vector<TYPE, SIZE>& other) const {
-            static_assert(SIZE==3, "Cross-product is only valid for 3D vectors");
+            static_assert(SIZE==3,
+                    "Cross-product is only valid for 3D vectors");
             Vector<TYPE, SIZE> v;
             v[0] = data[1]*other[2] - data[2]*other[1];
             v[1] = data[2]*other[0] - data[0]*other[2];
@@ -93,24 +100,29 @@ class Vector {
         TYPE magSq() const { return dot(*this); }
         TYPE mag() const { return sqrt(magSq()); }
 
-        Vector<TYPE, SIZE> proj(Vector<TYPE, SIZE> other) const { // project self onto other
+        // project self onto other
+        Vector<TYPE, SIZE> proj(Vector<TYPE, SIZE> other) const {
             return other * dot(other) / other.magSq();
         }
-        Vector<TYPE, SIZE> rej(Vector<TYPE, SIZE> other) const { // reject self onto other
+        // reject self onto other
+        Vector<TYPE, SIZE> rej(Vector<TYPE, SIZE> other) const {
             return operator-(proj(other));
         }
         inline Vector<TYPE, SIZE> normal() const {
             return operator/(mag());
         }
-        inline Vector<TYPE, SIZE> orthogonal() const { // counterclockwise orthogonal
+        // counterclockwise orthogonal
+        inline Vector<TYPE, SIZE> orthogonal() const {
             static_assert(SIZE==2, "Orthogonal is only valid for 2D vectors");
             return Vector<TYPE, SIZE>({-data[1], data[0]});
         }
         inline Vector<TYPE, SIZE> toMag(TYPE length) const {
-            return operator*(length/mag()); // I don't think there's any way to avoid the sqrt here
+            return operator*(length/mag());
+            // I don't think there's any way to avoid the sqrt here
         }
         inline Vector<TYPE, SIZE> toMagSq(TYPE lengthSq) const {
-            return operator*(sqrt(lengthSq/magSq())); // I don't think there's any way to avoid the sqrt here
+            return operator*(sqrt(lengthSq/magSq()));
+            // I don't think there's any way to avoid the sqrt here
         }
 };
 

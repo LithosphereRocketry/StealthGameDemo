@@ -46,8 +46,8 @@ class TilePrototype {
             sprite->load(dest);
             screenCenter = &dest->center;
         }
-        int draw(float camx, float camy, float zoom, SDL_Point* position);
-        int drawClipped(float camx, float camy, float zoom, SDL_Point* position);
+        int draw(float camx, float camy, float zoom, SDL_Point* pos);
+        int drawClipped(float camx, float camy, float zoom, SDL_Point* pos);
         std::unique_ptr<Tile> instantiate(SDL_Point* loc);
     private:
         std::unique_ptr<Sprite> sprite;
@@ -59,7 +59,9 @@ class TileGrid {
     public:
         TileGrid(size_t w, size_t h, int tw, int th);
         inline Tile* index(int x, int y) { return buffer[y*shape.w + x].get(); }
-        inline void fill(TilePrototype* prototype) { fillRect(prototype, 0, 0, shape.w, shape.h); }
+        inline void fill(TilePrototype* prototype) {
+            fillRect(prototype, 0, 0, shape.w, shape.h);
+        }
         void put(TilePrototype* prototype, int x, int y);
         void fillRect(TilePrototype* prototype, int x, int y, int w, int h);
         void draw(float camx, float camy, float zoom);

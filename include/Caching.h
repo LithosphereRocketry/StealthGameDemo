@@ -37,7 +37,8 @@ class CachedRenderer {
         }
         inline SDL_Texture* fetchTexture(SDL_Surface* surface) {
             if(!textureCache[surface]) {
-                textureCache[surface] = SDL_CreateTextureFromSurface(target, surface);
+                textureCache[surface] = 
+                    SDL_CreateTextureFromSurface(target, surface);
             }
             return textureCache[surface];
         }

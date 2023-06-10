@@ -25,7 +25,9 @@ class Sprite {
             rend = renderer;
             tx = rend->fetchTexture(surf);
         }
-        inline int render(uint8_t alpha = SDL_ALPHA_OPAQUE) { return render(NULL, alpha); }
+        inline int render(uint8_t alpha = SDL_ALPHA_OPAQUE) {
+            return render(NULL, alpha);
+        }
         inline int render(int x, int y, uint8_t alpha = SDL_ALPHA_OPAQUE) {
             SDL_Rect tgtbox = {x, y, -1, -1};
             tgtbox.w = txmask.w;
@@ -33,17 +35,19 @@ class Sprite {
             SDL_QueryTexture(tx, NULL, NULL, &tgtbox.w, &tgtbox.h);
             return render(&tgtbox, alpha);
         }
-        inline int render(SDL_Rect* location, uint8_t alpha = SDL_ALPHA_OPAQUE) {
+        inline int render(SDL_Rect* loc, uint8_t alpha = SDL_ALPHA_OPAQUE) {
             SDL_SetTextureAlphaMod(tx, alpha);
             if(tx) {
                 if(rend && rend->target) {
-                    int err = SDL_RenderCopy(rend->target, tx, &txmask, location);
+                    int err = SDL_RenderCopy(rend->target, tx, &txmask, loc);
                     if(err < 0) {
-                        std::cerr << "Warning: rendering failed with error " << SDL_GetError() << "\n";
+                        std::cerr << "Warning: rendering failed with error "
+                                  << SDL_GetError() << "\n";
                     }
                     return err;
                 } else {
-                    std::cerr << "Warning: tried to render to a nonexistent renderer\n";
+                    std::cerr <<
+                        "Warning: tried to render to a nonexistent renderer\n";
                     return 0;
                 }
             } else {

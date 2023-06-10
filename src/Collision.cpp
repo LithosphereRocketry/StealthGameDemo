@@ -16,7 +16,8 @@ void CollidingObject::stepCollisions(float dt, Collider* stuck) {
         // roll forward to collision
         pos += move.toMagSq(f.distSq);
         vel += pendingVel*mvfrac;
-        // Partition up the change in velocity this frame to before & after the collision
+        // Partition up the change in velocity this frame to before & after the
+        // collision
         pendingVel *= 1.0f - mvfrac;
         if(f.type == STUCK) {
             if(stuck == NULL) {
@@ -34,13 +35,56 @@ void CollidingObject::stepCollisions(float dt, Collider* stuck) {
         stepCollisions(dt * (1.0f - mvfrac), stuck);
     }
 }
- // this feels like it should be able to be const but it sorta isn't because it gives other things permission to modify the object
-FreePathResult EdgeCollider::getFreePath(const Vector<float, 2> objpos, const Vector<float, 2> dir, float radius) {
+
+
+FreePathResult CircleCollider::getFreePath(const Vector<float, 2> objpos,
+                                           const Vector<float, 2> dir,
+                                           float rad) {
+    // see if we hit
+    std::cout << "Direction " << dir;
+    float colrad = radius + rad;
+    std::cout << "\tCollision radius " << colrad;
+    Vector<float, 2> offs = position - objpos;
+    std::cout << "\tOffset " << offs;
+    Vector<float, 2> tangent = offs.rej(dir);
+    std::cout << "\tTangent " << tangent;
+    if(tangent.magSq() >= powf(colrad - SKIM_EPSILON, 2)
+        || dir.dot(offs) <= SKIM_EPSILON) {
+        std::cout << "\tFREE\n";
+        return {FREE, INFINITY, this};
+    }
+    // See if the object is inside us
+    if(offs.magSq() <= powf(colrad, 2)) {
+        std::cout << "\tSTUCK\n";
+        return {STUCK, 0, this};
+    }
+    // if not, use Pythagorean Theorem to figure out how soon we hit
+    Vector<float, 2> toHitPoint = tangent + dir.toMagSq(powf(colrad, 2)
+                                                         - tangent.magSq());
+    Vector<float, 2> travel = offs - toHitPoint;
+        std::cout << "\tCOLLIDING\n";
+    return {COLLIDING, travel.magSq(), this};
+}
+
+void CircleCollider::collide(CollidingObject* const obj) {
+    obj->applyBounce(obj->pos-position, elasticity);
+}
+void CircleCollider::slide(CollidingObject* const obj) {
+    Vector<float, 2> normal = obj->pos-position;
+    obj->vel = obj->vel.rej(normal)*elasticity.parallel*obj->elas.parallel;
+    obj->pendingVel = obj->pendingVel.rej(normal);
+}
+
+ // this feels like it should be able to be const but it sorta isn't because it 
+ // gives other things permission to modify the object
+FreePathResult EdgeCollider::getFreePath(const Vector<float, 2> objpos,
+                                    const Vector<float, 2> dir, float radius) {
     Vector<float, 2> ctroffs = (objpos - position).proj(normal);
     if(dir.dot(ctroffs) >= -SKIM_EPSILON) {
         return {FREE, INFINITY, this};
     }
-    Vector<float, 2> offs = ctroffs - ctroffs.toMag(radius); // offset the line 1 radius closer
+    Vector<float, 2> offs = ctroffs - ctroffs.toMag(radius);
+    // offset the line 1 radius closer
     // if the line is now past the point, we're stuck and should slide
     if(dir.dot(offs) >= 0) {
         return {STUCK, 0, this};
@@ -57,24 +101,30 @@ void EdgeCollider::slide(CollidingObject* const obj) {
     obj->pendingVel = obj->pendingVel.rej(normal);
 }
 
-FreePathResult SegmentCollider::getFreePath(const Vector<float, 2> pos, const Vector<float, 2> dir, float radius) {
+FreePathResult SegmentCollider::getFreePath(const Vector<float, 2> pos,
+                                    const Vector<float, 2> dir, float radius) {
     Vector<float, 2> ctrdiff = pos - position;
     Vector<float, 2> ctroffs = ctrdiff.rej(offset);
-    if(dir.dot(ctroffs) > 0) {
+    if(dir.dot(ctroffs) >= -SKIM_EPSILON) {
         return {FREE, INFINITY, this};
     }
     Vector<float, 2> radoffs = ctroffs.toMag(radius);
     Vector<float, 2> offs = ctroffs - radoffs;
-    Vector<float, 2> diff = ctrdiff - radoffs; // offset the line 1 radius closer
+    Vector<float, 2> diff = ctrdiff - radoffs; // offset 1 radius closer
+    if(offs.magSq() == 0 || dir.magSq() == 0) {
+        return {FALLBACK, 0, this}; // this should almost never happen
+    }
     float distsq = dir.magSq()*powf(offs.magSq()/offs.dot(dir), 2);
     Vector<float, 2> along = diff + dir.toMagSq(distsq);
     float alongdist = along.dot(offset.normal());
-    if(offs.magSq() == 0 || dir.magSq() == 0) {
-        return {FALLBACK, 0, this}; // this should almost never happen
-    } else if(alongdist < 0 || alongdist > radius) {
+    if(alongdist < 0 || alongdist > offset.mag()) {
         return {FREE, INFINITY, this};
     } else {
-        return {COLLIDING, distsq, this};
+        if(dir.dot(offs) >= 0) {
+            return {STUCK, 0, this};
+        } else {
+            return {COLLIDING, distsq, this};
+        }
     }
 }
 
