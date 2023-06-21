@@ -7,12 +7,13 @@
 struct Elasticity {
     float normal;
     float parallel;
+    float slide;
 };
 
 // units roughly m/kg/s
 class PhysicsObject {
     public:
-        static constexpr Elasticity ELAS_DEFAULT = {1, 1};
+        static constexpr Elasticity ELAS_DEFAULT = {1, 1, 0};
         float mass;
         Vector<float, 2> pos;
         Vector<float, 2> vel;

@@ -1,9 +1,8 @@
 # TODO
+* Make slide physics behave (continued)
+* Work collision shapes into tile system
 * Better testing of physics edge cases (pun intended)
-* Debug visualization
 * Keyboard input
-* Short barriers
-* Barrier integration into grids etc
 * Sound integration?
 * Multiple game planes
 * Peek-through for lower planes

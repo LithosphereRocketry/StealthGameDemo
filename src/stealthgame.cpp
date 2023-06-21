@@ -22,7 +22,7 @@ int samples;
 long int tottime;
 
 CollisionGroup grp;
-CollidingObject test(0, 10, 1, 1, {0.9, 0.9}, &grp);
+CollidingObject test(0, 10, 1, 1, {0.9, 0.9, 0.2}, &grp);
 vector<Vector<float, 2>> polygon = {
     {-2, -3},
     {-1, 0},

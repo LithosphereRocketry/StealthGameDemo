@@ -93,7 +93,7 @@ class Collider: public Collidable {
          *      usually be modified.
         */
         virtual void collide(CollidingObject* obj); // modifies obj
-        virtual void slide(CollidingObject* obj);
+        virtual void slide(CollidingObject* obj, float dt);
     protected:
         static constexpr float SKIM_EPSILON = 1e-6;
         // the minimum distance an object may intrude into a surface and still
@@ -135,7 +135,7 @@ class CircleCollider: public Collider {
                                 const Vector<float, 2> dir,
                                 float radius);
         void collide(CollidingObject* const obj);
-        void slide(CollidingObject* const obj);
+        void slide(CollidingObject* const obj, float dt);
 };
 
 /**
@@ -156,7 +156,7 @@ class EdgeCollider: public Collider {
                                 const Vector<float, 2> dir,
                                 float radius);
         void collide(CollidingObject* const obj);
-        void slide(CollidingObject* const obj);
+        void slide(CollidingObject* const obj, float dt);
 };
 
 /**
@@ -179,7 +179,7 @@ class SegmentCollider: public Collider {
                                 const Vector<float, 2> dir,
                                 float radius);
         void collide(CollidingObject* const obj);
-        void slide(CollidingObject* const obj);
+        void slide(CollidingObject* const obj, float dt);
 };
 
 /**

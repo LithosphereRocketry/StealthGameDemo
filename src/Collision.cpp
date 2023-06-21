@@ -27,7 +27,7 @@ void CollidingObject::stepCollisions(float dt, Collider* stuck) {
                 pendingVel = {0, 0};
                 return;
             }
-            f.target->slide(this);
+            f.target->slide(this, dt*mvfrac);
         } else {
             f.target->collide(this);
         }
@@ -41,37 +41,30 @@ FreePathResult CircleCollider::getFreePath(const Vector<float, 2> objpos,
                                            const Vector<float, 2> dir,
                                            float rad) {
     // see if we hit
-    std::cout << "Direction " << dir;
     float colrad = radius + rad;
-    std::cout << "\tCollision radius " << colrad;
     Vector<float, 2> offs = position - objpos;
-    std::cout << "\tOffset " << offs;
     Vector<float, 2> tangent = offs.rej(dir);
-    std::cout << "\tTangent " << tangent;
     if(tangent.magSq() >= powf(colrad - SKIM_EPSILON, 2)
         || dir.dot(offs) <= SKIM_EPSILON) {
-        std::cout << "\tFREE\n";
         return {FREE, INFINITY, this};
     }
     // See if the object is inside us
     if(offs.magSq() <= powf(colrad, 2)) {
-        std::cout << "\tSTUCK\n";
         return {STUCK, 0, this};
     }
     // if not, use Pythagorean Theorem to figure out how soon we hit
     Vector<float, 2> toHitPoint = tangent + dir.toMagSq(powf(colrad, 2)
                                                          - tangent.magSq());
     Vector<float, 2> travel = offs - toHitPoint;
-        std::cout << "\tCOLLIDING\n";
     return {COLLIDING, travel.magSq(), this};
 }
 
 void CircleCollider::collide(CollidingObject* const obj) {
     obj->applyBounce(obj->pos-position, elasticity);
 }
-void CircleCollider::slide(CollidingObject* const obj) {
+void CircleCollider::slide(CollidingObject* const obj, float dt) {
     Vector<float, 2> normal = obj->pos-position;
-    obj->vel = obj->vel.rej(normal)*elasticity.parallel*obj->elas.parallel;
+    obj->vel = obj->vel.rej(normal);
     obj->pendingVel = obj->pendingVel.rej(normal);
 }
 
@@ -96,8 +89,8 @@ void EdgeCollider::collide(CollidingObject* const obj) {
     obj->applyBounce(normal, elasticity);
 }
 
-void EdgeCollider::slide(CollidingObject* const obj) {
-    obj->vel = obj->vel.rej(normal)*elasticity.parallel*obj->elas.parallel;
+void EdgeCollider::slide(CollidingObject* const obj, float dt) {
+    obj->vel = obj->vel.rej(normal);
     obj->pendingVel = obj->pendingVel.rej(normal);
 }
 
@@ -131,6 +124,7 @@ FreePathResult SegmentCollider::getFreePath(const Vector<float, 2> pos,
 void SegmentCollider::collide(CollidingObject* const obj) {
     obj->applyBounce(offset.orthogonal(), elasticity);
 }
-void SegmentCollider::slide(CollidingObject* const obj) {
-    collide(obj);
+void SegmentCollider::slide(CollidingObject* const obj, float dt) {
+    obj->vel = obj->vel.proj(offset);
+    obj->pendingVel = obj->pendingVel.proj(offset);
 }
