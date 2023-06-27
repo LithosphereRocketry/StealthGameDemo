@@ -20,7 +20,7 @@ void CollidingObject::stepCollisions(float dt, Collider* stuck) {
         // collision
         pendingVel *= 1.0f - mvfrac;
         if(f.type == STUCK) {
-            if(stuck == NULL) {
+            if(!stuck) {
                 stuck = f.target;
             } else if(stuck != f.target) {
                 // if we're stuck in two things at once, give up

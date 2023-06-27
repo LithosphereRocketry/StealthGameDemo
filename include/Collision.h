@@ -117,6 +117,20 @@ class CollidingObject: public PhysicsObject {
 */
 
 /**
+ * NoneCollider
+ * 
+ * Never collides with anything; used as placeholder
+*/
+class NoneCollider: public Collider {
+    public:
+        FreePathResult getFreePath(const Vector<float, 2> pos,
+                                const Vector<float, 2> dir,
+                                float radius) { return {FREE, INFINITY, this}; }
+        void collide(CollidingObject* const obj) {}
+        void slide(CollidingObject* const obj, float dt) {}      
+};
+
+/**
  * CircleCollider
  * 
  * Circular collider
