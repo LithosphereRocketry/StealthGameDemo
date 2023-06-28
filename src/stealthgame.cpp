@@ -79,6 +79,7 @@ int main(int argc, char** argv) {
         // for some reason clearing the screen is a lot faster
         // it really feels like there should be a way to not clear but leave the
         // framebuffer untouched but hey this is what the internet recommends
+        walls.draw(0, 0, 1);
         SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0xFF, 0xFF);
         drawPoint(renderer, test.pos, {0, 0}, 20, test.radius);
         drawInfLine(renderer, edge->position, edge->normal, {0, 0}, 20);
