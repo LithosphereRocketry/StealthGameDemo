@@ -80,7 +80,7 @@ class Collidable {
         */
         virtual FreePathResult getFreePath(const Vector<float, 2> pos,
                                            const Vector<float, 2> dir,
-                                           float radius);
+                                           float radius) = 0;
 };
 
 class Collider: public Collidable {
@@ -92,8 +92,11 @@ class Collider: public Collidable {
          * obj: The object colliding with this collider. This object will
          *      usually be modified.
         */
-        virtual void collide(CollidingObject* obj); // modifies obj
-        virtual void slide(CollidingObject* obj, float dt);
+        virtual FreePathResult getFreePath(const Vector<float, 2> pos,
+                                           const Vector<float, 2> dir,
+                                           float radius) = 0;
+        virtual void collide(CollidingObject* obj) = 0; // modifies obj
+        virtual void slide(CollidingObject* obj, float dt) = 0;
     protected:
         static constexpr float SKIM_EPSILON = 1e-6;
         // the minimum distance an object may intrude into a surface and still
@@ -213,7 +216,7 @@ class CollisionGroup: public Collidable {
                                 const Vector<float, 2> dir,
                                 float radius) {
             FreePathResult result = {FREE, INFINITY, nullptr};
-            for(int i = 0; i < colliders.size(); i++) {
+            for(size_t i = 0; i < colliders.size(); i++) {
                 FreePathResult newres =
                                     colliders[i]->getFreePath(pos, dir, radius);
                 if(newres.distSq < result.distSq) {
@@ -253,7 +256,7 @@ class CollisionPoly: public CollisionGroup {
     public:
         CollisionPoly(std::vector<Vector<float, 2>> vertices,
                             Elasticity elas = PhysicsObject::ELAS_DEFAULT) {
-            for(int i = 0; i < vertices.size(); i++) {
+            for(size_t i = 0; i < vertices.size(); i++) {
                 add(SegmentCollider(vertices[i],
                     vertices[(i+1)%vertices.size()]-vertices[i], elas));
                 add(CircleCollider(vertices[i], 0, elas));

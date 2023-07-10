@@ -2,7 +2,7 @@
 #include <iostream>
 
 void CollidingObject::stepVelocity(float dt) {
-    stepCollisions(dt, NULL);
+    stepCollisions(dt, nullptr);
 }
 
 void CollidingObject::stepCollisions(float dt, Collider* stuck) {

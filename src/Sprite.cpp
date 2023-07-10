@@ -1,7 +1,7 @@
 #include "Sprite.h"
 
 
-Sprite::Sprite(const std::string path, SDL_Rect* clipMask) {
+Sprite::Sprite(const std::string& path, SDL_Rect* clipMask) {
     surf = CachedRenderer::fetchSurface(path);
     if(clipMask) {
         txmask = *clipMask;
@@ -19,7 +19,7 @@ int Sprite::render(int x, int y, uint8_t alpha) {
     SDL_Rect tgtbox = {x, y, -1, -1};
     tgtbox.w = txmask.w;
     tgtbox.h = txmask.h;
-    SDL_QueryTexture(tx, NULL, NULL, &tgtbox.w, &tgtbox.h);
+    SDL_QueryTexture(tx, nullptr, nullptr, &tgtbox.w, &tgtbox.h);
     return render(&tgtbox, alpha);
 }
 

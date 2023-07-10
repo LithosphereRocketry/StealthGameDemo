@@ -1,4 +1,5 @@
 # TODO
+* Make tile system less stupid
 * Make slide physics behave (continued)
 * Work collision shapes into tile system
 * Better testing of physics edge cases (pun intended)

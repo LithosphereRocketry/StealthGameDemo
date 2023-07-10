@@ -3,13 +3,15 @@
 #include <initializer_list>
 #include <iostream>
 #include <typeinfo>
-#include <math.h>
+#include <cmath>
 
 #include <SDL2/SDL.h>
 
 // TYPE here should really be something like float or double
 template <class TYPE, size_t SIZE>
 class Vector {
+    static_assert(std::is_arithmetic<TYPE>::value,
+        "Geometric vector must have arithmetic type");
     public:
         TYPE data[SIZE];
         Vector(std::initializer_list<TYPE> lst): Vector() {
@@ -24,10 +26,7 @@ class Vector {
                 data[pos++] = element; // I kinda hate this
             }
         }
-        Vector() {
-            static_assert(std::is_arithmetic<TYPE>::value,
-                "Geometric vector must have arithmetic type");
-        };
+        Vector() {};
         inline TYPE operator [] (int index) const {
             return data[index];
         }
@@ -35,7 +34,7 @@ class Vector {
             return data[index];
         }
         void operator *= (const TYPE& scalar) {
-            for(int i = 0; i < SIZE; i++) {
+            for(size_t i = 0; i < SIZE; i++) {
                 data[i] *= scalar;
             }
         }
@@ -45,7 +44,7 @@ class Vector {
             return v;
         }
         void operator /= (const TYPE& scalar) {
-            for(int i = 0; i < SIZE; i++) {
+            for(size_t i = 0; i < SIZE; i++) {
                 data[i] /= scalar;
             }
         }
@@ -55,7 +54,7 @@ class Vector {
             return v;
         }
         void operator += (const Vector<TYPE, SIZE>& other) {
-            for(int i = 0; i < SIZE; i++) {
+            for(size_t i = 0; i < SIZE; i++) {
                 data[i] += other[i];
             }
         }
@@ -66,7 +65,7 @@ class Vector {
             return v;
         }
         void operator -= (const Vector<TYPE, SIZE>& other) {
-            for(int i = 0; i < SIZE; i++) {
+            for(size_t i =  0; i < SIZE; i++) {
                 data[i] -= other[i];
             }
         }
@@ -83,7 +82,7 @@ class Vector {
         }
         TYPE dot(const Vector<TYPE, SIZE>& other) const {
             TYPE total = 0;
-            for(int i = 0; i < SIZE; i++) {
+            for(size_t i = 0; i < SIZE; i++) {
                 total += data[i]*other[i];
             }
             return total;
@@ -98,7 +97,7 @@ class Vector {
             return v;
         }
         TYPE magSq() const { return dot(*this); }
-        TYPE mag() const { return sqrt(magSq()); }
+        TYPE mag() const { return std::sqrt(magSq()); }
 
         // project self onto other
         Vector<TYPE, SIZE> proj(Vector<TYPE, SIZE> other) const {
@@ -121,7 +120,7 @@ class Vector {
             // I don't think there's any way to avoid the sqrt here
         }
         inline Vector<TYPE, SIZE> toMagSq(TYPE lengthSq) const {
-            return operator*(sqrt(lengthSq/magSq()));
+            return operator*(std::sqrt(lengthSq/magSq()));
             // I don't think there's any way to avoid the sqrt here
         }
 };
@@ -130,7 +129,7 @@ class Vector {
 template <class TYPE, size_t SIZE>
 inline std::ostream& operator << (std::ostream& os, Vector<TYPE, SIZE> v) {
     os << "<";
-    for(int i = 0; i < SIZE; i++) {
+    for(size_t i = 0; i < SIZE; i++) {
         if(i == 0) {}
         os << v[i];
         if(i < SIZE-1) {

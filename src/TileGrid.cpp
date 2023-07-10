@@ -11,9 +11,7 @@ TileGrid::TileGrid(size_t w, size_t h, int tw, int th) {
 void TileGrid::put(TilePrototype* prototype, int x, int y) {
     SDL_Point p = {x*tileWidth, y*tileHeight};
     mergeBounds(&prototype->graphicsBox, &maxBound, &maxBound);
-    buffer[y*shape.w + x] = std::unique_ptr<Tile>(
-        std::move(prototype->instantiate(&p))
-    );
+    buffer[y*shape.w + x] = std::unique_ptr<Tile>(prototype->instantiate(&p));
 }
 
 void TileGrid::fillRect(TilePrototype* prototype, int x, int y, int w, int h) {
@@ -25,7 +23,7 @@ void TileGrid::fillRect(TilePrototype* prototype, int x, int y, int w, int h) {
 }
 
 void TileGrid::draw(float camx, float camy, float zoom) {
-    SDL_Point* ctr = NULL;
+    SDL_Point* ctr = nullptr;
     for(int i = 0; i < shape.w*shape.h; i++) {
         if(buffer[i] && buffer[i]->prototype
                      && buffer[i]->prototype->screenCenter) {

@@ -12,19 +12,18 @@
 // I might change this eventually, but not sure
 class Sprite {
     public:
-        Sprite() {}
-        Sprite(const std::string path, SDL_Rect* clipMask);
+        Sprite(const std::string& path, SDL_Rect* clipMask);
 
         void load(CachedRenderer* renderer);
         inline int render(uint8_t alpha = SDL_ALPHA_OPAQUE) {
-            return render(NULL, alpha);
+            return render(nullptr, alpha);
         }
         int render(int x, int y, uint8_t alpha = SDL_ALPHA_OPAQUE);
         int render(SDL_Rect* loc, uint8_t alpha = SDL_ALPHA_OPAQUE);
     private:
-        CachedRenderer* rend = NULL;
-        SDL_Surface* surf = NULL;
-        SDL_Texture* tx = NULL;
+        CachedRenderer* rend = nullptr;
+        SDL_Surface* surf = nullptr;
+        SDL_Texture* tx = nullptr;
         SDL_Rect txmask;
 };
 

@@ -31,7 +31,7 @@ vector<Vector<float, 2>> polygon = {
     {-1, -7}
 };
 
-int main(int argc, char** argv) {
+int main() {
     EdgeCollider* edge = grp.add(EdgeCollider({0, -5}, {1, 10}));
     EdgeCollider* wall = grp.add(EdgeCollider({5, -5}, {-3, 1}));
     CollisionPoly* poly = grp.add(CollisionPoly(polygon));
@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
                                             SDL_WINDOWPOS_UNDEFINED,
                                             SCREEN_WIDTH, SCREEN_HEIGHT,
                                             SDL_WINDOW_SHOWN );
-    if( window == NULL ) {
+    if(!window) {
         cout << "SDL window creation failed: error " << SDL_GetError() << endl;
         return -1;
     }
@@ -55,7 +55,8 @@ int main(int argc, char** argv) {
         SDL_RENDERER_ACCELERATED);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-    CachedRenderer cr = CachedRenderer(renderer);
+    CachedRenderer cr(renderer);
+    Camera cam {&cr, {0, 0}, 20, 20};
 
     SDL_Rect wallbound = {16, 0, 16, 32};
     SDL_Rect floorbound = {64, 32, 16, 32};
@@ -81,10 +82,10 @@ int main(int argc, char** argv) {
         // framebuffer untouched but hey this is what the internet recommends
         walls.draw(0, 0, 1);
         SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0xFF, 0xFF);
-        drawPoint(renderer, test.pos, {0, 0}, 20, test.radius);
-        drawInfLine(renderer, edge->position, edge->normal, {0, 0}, 20);
-        drawInfLine(renderer, wall->position, wall->normal, {0, 0}, 20);
-        drawPoly(renderer, polygon, {0, 0}, 20);
+        drawPoint(&cam, test.pos, test.radius);
+        drawInfLine(&cam, edge->position, edge->normal);
+        drawInfLine(&cam, wall->position, wall->normal);
+        drawPoly(&cam, polygon);
         SDL_Event e;
         while(SDL_PollEvent(&e)) {
             switch(e.type) {
