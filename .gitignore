@@ -1,3 +1,7 @@
+# Makefile hint files
+__DEBUG
+__RELEASE
+
 # VSCode
 .vscode
 
