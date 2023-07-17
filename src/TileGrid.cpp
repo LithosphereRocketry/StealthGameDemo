@@ -1,17 +1,15 @@
-#include "Tile.h"
+#include "TileGrid.h"
 
-TileGrid::TileGrid(size_t w, size_t h, int tw, int th) {
-    shape.w = w;
-    shape.h = h;
-    tileWidth = tw;
-    tileHeight = th;
-    buffer = std::vector<std::unique_ptr<Tile>>(w*h);
+TileGrid::TileGrid(int w, int h, int tw, int th):
+        shape({0, 0, w, h}), tileWidth(tw), tileHeight(th), buffer(w*h),
+        maxBound{{0, 0}, {0, 0}}, activeCam(nullptr) {
 }
 
 void TileGrid::put(TilePrototype* prototype, int x, int y) {
-    SDL_Point p = {x*tileWidth, y*tileHeight};
-    mergeBounds(&prototype->graphicsBox, &maxBound, &maxBound);
-    buffer[y*shape.w + x] = std::unique_ptr<Tile>(prototype->instantiate(&p));
+    Vector<float, 2> p = {x*tileWidth, y*tileHeight};
+    maxBound |= prototype->getBounds();
+    prototype->load(activeCam);
+    buffer[y*shape.w + x] = std::unique_ptr<Tile>(prototype->instantiate(p));
 }
 
 void TileGrid::fillRect(TilePrototype* prototype, int x, int y, int w, int h) {
@@ -22,28 +20,23 @@ void TileGrid::fillRect(TilePrototype* prototype, int x, int y, int w, int h) {
     }
 }
 
-void TileGrid::draw(float camx, float camy, float zoom) {
-    SDL_Point* ctr = nullptr;
-    for(int i = 0; i < shape.w*shape.h; i++) {
-        if(buffer[i] && buffer[i]->prototype
-                     && buffer[i]->prototype->screenCenter) {
-            ctr = buffer[i]->prototype->screenCenter;
-            break;
-        }
+void TileGrid::load(Camera* newcam) {
+    activeCam = newcam;
+    for(auto const& t : buffer) {
+        t->prototype->load(newcam);
     }
-    if(!ctr) { return; }
-    int xmin = std::max((float) 0,
-                        (-maxBound.x - maxBound.w - ctr->x/zoom)/tileWidth);
-    int ymin = std::max((float) 0,
-                        (-maxBound.y - maxBound.h - ctr->y/zoom)/tileHeight);
-    int xmax = std::min((float) shape.w,
-                        (-maxBound.x + ctr->x/zoom)/tileWidth + 1);
-    int ymax = std::min((float) shape.h,
-                        (-maxBound.y + ctr->y/zoom)/tileHeight + 1);
+}
+
+void TileGrid::draw() {
+    BoundingBox<float> spaceBounds = activeCam->visibleBounds();
+    int xmin = std::max(0, int(std::floor(spaceBounds.c1[0])));
+    int ymin = std::max(0, int(std::floor(spaceBounds.c1[1])));
+    int xmax = std::min(shape.w, int(std::ceil(spaceBounds.c2[0])));
+    int ymax = std::min(shape.h, int(std::ceil(spaceBounds.c2[1])));
     for(int i = ymin; i < ymax; i++) {
         for(int j = xmin; j < xmax; j++) {
             if(index(j, i)) {
-                index(j, i)->draw(camx, camy, zoom);
+                index(j, i)->draw();
             } else {
                 std::cerr << "Warning: tried to draw an uninitialized tile at ("
                           << j << ", " << i << ")\n";

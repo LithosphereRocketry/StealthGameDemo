@@ -1,17 +1,18 @@
 #include "Tile.h"
 
-int Tile::draw(float camx, float camy, float zoom) {
+int Tile::draw() {
     if(prototype) {            
-        return prototype->draw(camx, camy, zoom, &position);
+        return prototype->draw(position);
     } else {
         return 0;
     }
 }
 
-int Tile::drawClipped(float camx, float camy, float zoom) {
-    if(prototype) {            
-        return prototype->drawClipped(camx, camy, zoom, &position);
-    } else {
-        return 0;
-    }
-}
+// TODO: see TilePrototype::drawClipped()
+// int Tile::drawClipped() {
+//     if(prototype) {            
+//         return prototype->drawClipped(position);
+//     } else {
+//         return 0;
+//     }
+// } 

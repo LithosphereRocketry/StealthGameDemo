@@ -12,7 +12,8 @@
 // I might change this eventually, but not sure
 class Sprite {
     public:
-        Sprite(const std::string& path, SDL_Rect* clipMask);
+        Sprite(const std::string& path);
+        Sprite(const std::string& path, SDL_Rect clipMask);
 
         void load(CachedRenderer* renderer);
         inline int render(uint8_t alpha = SDL_ALPHA_OPAQUE) {

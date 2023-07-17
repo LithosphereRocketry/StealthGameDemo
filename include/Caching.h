@@ -35,6 +35,10 @@ class CachedRenderer {
             return surfaceCache[path];
         }
         inline SDL_Texture* fetchTexture(SDL_Surface* surface) {
+            if(!surface) {
+                std::cout << "Fetched texture from no surface\n";
+                return nullptr;
+            }
             if(!textureCache[surface]) {
                 textureCache[surface] = 
                     SDL_CreateTextureFromSurface(target, surface);

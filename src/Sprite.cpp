@@ -1,18 +1,19 @@
 #include "Sprite.h"
 
-
-Sprite::Sprite(const std::string& path, SDL_Rect* clipMask) {
+Sprite::Sprite(const std::string& path) {
     surf = CachedRenderer::fetchSurface(path);
-    if(clipMask) {
-        txmask = *clipMask;
-    } else {
-        txmask = {0, 0, surf->w, surf->h};
-    }
+    txmask = {0, 0, surf->w, surf->h};
+}
+
+Sprite::Sprite(const std::string& path, SDL_Rect clipMask): txmask(clipMask) {
+    surf = CachedRenderer::fetchSurface(path);
 }
 
 void Sprite::load(CachedRenderer* renderer) {
     rend = renderer;
-    tx = rend->fetchTexture(surf);
+    if(rend) {
+        tx = rend->fetchTexture(surf);
+    }
 }
 
 int Sprite::render(int x, int y, uint8_t alpha) {

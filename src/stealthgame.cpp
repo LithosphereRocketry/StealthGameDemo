@@ -7,6 +7,7 @@
 
 #include "Caching.h"
 #include "Tile.h"
+#include "TileGrid.h"
 #include "Collision.h"
 #include "SDLDebug.h"
 
@@ -36,12 +37,12 @@ int main() {
     EdgeCollider* wall = grp.add(EdgeCollider({5, -5}, {-3, 1}));
     CollisionPoly* poly = grp.add(CollisionPoly(polygon));
     SDL_Window* window = nullptr;
+    cout << "Initializing video...";
 
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
         cout << "SDL not initialized: error " << SDL_GetError() << endl;
         return -1;
     }
-
     window = SDL_CreateWindow( "Hello SDL", SDL_WINDOWPOS_UNDEFINED,
                                             SDL_WINDOWPOS_UNDEFINED,
                                             SCREEN_WIDTH, SCREEN_HEIGHT,
@@ -54,23 +55,27 @@ int main() {
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1,
         SDL_RENDERER_ACCELERATED);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    cout << "Done.\n";
 
+    cout << "Initializing camera...";
     CachedRenderer cr(renderer);
     Camera cam {&cr, {0, 0}, 20, 20};
+    cout << "Done.\n";
 
+    cout << "Initializing tileset...";
     SDL_Rect wallbound = {16, 0, 16, 32};
     SDL_Rect floorbound = {64, 32, 16, 32};
-    SDL_Rect tilebounds = {0, -100, 100, 200};
+    BoundingBox<float> tilebounds {{0, -100}, {100, 200}};
 
-    TilePrototype walltile("tilesheet.png", &wallbound, &tilebounds);
-    walltile.load(&cr);
-
-    TilePrototype floor("tilesheet.png", &floorbound, &tilebounds);
-    floor.load(&cr);
-
+    TilePrototype walltile("tilesheet.png", wallbound, tilebounds);
+    TilePrototype floor("tilesheet.png", floorbound, tilebounds);
+    cout << "Done.\n";
+    cout << "Building grid...";
     TileGrid walls = TileGrid(1000, 1000, 100, 100);
     walls.fill(&walltile);
     walls.fillRect(&floor, 1, 1, 8, 8);
+    walls.load(&cam);
+    cout << "Done.\nStarting game\n";
     bool quit = false;
     while(!quit) {
         auto start = chrono::steady_clock::now();
@@ -80,7 +85,7 @@ int main() {
         // for some reason clearing the screen is a lot faster
         // it really feels like there should be a way to not clear but leave the
         // framebuffer untouched but hey this is what the internet recommends
-        walls.draw(0, 0, 1);
+        walls.draw();
         SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0xFF, 0xFF);
         drawPoint(&cam, test.pos, test.radius);
         drawInfLine(&cam, edge->position, edge->normal);

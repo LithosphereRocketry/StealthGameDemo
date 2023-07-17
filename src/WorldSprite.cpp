@@ -15,15 +15,48 @@ SDL_Point Camera::toScreenSpace(Vector<float, 2> pos) const {
 SDL_Rect Camera::toScreenSpace(BoundingBox<float> box) const {
     SDL_Point tl = toScreenSpace(box.c1);
     SDL_Point br = toScreenSpace(box.c2);
-    return {
-        tl.x, tl.y,
-        br.x-tl.x, br.y-tl.y
-    };
+    SDL_Rect newbox = { tl.x, tl.y, br.x-tl.x, br.y-tl.y };
+    if(newbox.w < 0) {
+        newbox.w = -newbox.w;
+        newbox.x -= newbox.w;
+    }
+    if(newbox.h < 0) {
+        newbox.h = -newbox.h;
+        newbox.y -= newbox.h;
+    }
+    return newbox;
 }
 
-void WorldSprite::load(Camera* camera) {
-    cam = camera;
-    Sprite::load(cam->renderer);
+Vector<float, 2> Camera::toWorldSpace(SDL_Point pos) const {
+    int w, h;
+    SDL_GetRendererOutputSize(renderer->target, &w, &h);
+    Vector<float, 2> posdraw = {float(pos.x - w/2.0f)/float(pxUnitX),
+                                float(pos.y - h/2.0f)/float(pxUnitY)};
+    Vector<float, 2> worldPos = posdraw + position;
+    return worldPos;
+}
+
+BoundingBox<float> Camera::toWorldSpace(SDL_Rect box) const {
+    BoundingBox<float> newbox = { toWorldSpace(SDL_Point({box.x, box.y})),
+                        toWorldSpace(SDL_Point({box.x+box.w, box.y+box.h})) };
+    if(newbox.c1[0] > newbox.c2[0]) { std::swap(newbox.c1[0], newbox.c2[0]); };
+    if(newbox.c1[1] > newbox.c2[1]) { std::swap(newbox.c1[1], newbox.c2[1]); };
+    return newbox;
+}
+
+BoundingBox<float> Camera::visibleBounds() {
+    int w, h;
+    SDL_GetRendererOutputSize(renderer->target, &w, &h);
+    return toWorldSpace({0, 0, w, h});
+}
+
+void WorldSprite::load(Camera* newCam) {
+    if(newCam) {
+        if(cam != newCam || cam->renderer != newCam->renderer) {
+            Sprite::load(newCam->renderer);
+        }
+        cam = newCam;
+    }    
 }
 
 

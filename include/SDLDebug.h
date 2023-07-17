@@ -1,11 +1,17 @@
-#include <SDL2/SDL.h>
+#ifndef SDL_DEBUG_H
+#define SDL_DEBUG_H
+
+#include <vector>
+#include <iostream>
 #include "math.h"
+#include <SDL2/SDL.h>
+
 #include "VectorMath.h"
 #include "WorldSprite.h"
 
 #define SDL_DEBUG_CIRCLE_PTS 20
 
-void drawInfLine(Camera* rend, Vector<float, 2> origin,
+inline void drawInfLine(Camera* rend, Vector<float, 2> origin,
             Vector<float, 2> normal) {
     SDL_Point originpt = rend->toScreenSpace(origin);
     SDL_Point offspt = rend->toScreenSpace(origin+normal.orthogonal());
@@ -23,7 +29,7 @@ void drawInfLine(Camera* rend, Vector<float, 2> origin,
     }
 }
 
-void drawVector(Camera* rend, Vector<float, 2> vec, Vector<float, 2> origin) {
+inline void drawVector(Camera* rend, Vector<float, 2> vec, Vector<float, 2> origin) {
     Vector<float, 2> corner1 = origin + vec*0.9 + vec.orthogonal()*0.1; 
     Vector<float, 2> corner2 = origin + vec*0.9 - vec.orthogonal()*0.1;
     SDL_Point points[] = {
@@ -36,7 +42,7 @@ void drawVector(Camera* rend, Vector<float, 2> vec, Vector<float, 2> origin) {
     SDL_RenderDrawLines(rend->renderer->target, points, 5);
 }
 
-void drawPoint(Camera* rend, Vector<float, 2> pos, float radius) {
+inline void drawPoint(Camera* rend, Vector<float, 2> pos, float radius) {
     static const double pi = std::atan(1.0)*4; // TODO: migrate to C++20 pi?
     SDL_Point points[SDL_DEBUG_CIRCLE_PTS + 1];
     for(size_t i = 0; i < SDL_DEBUG_CIRCLE_PTS + 1; i++) {
@@ -48,7 +54,7 @@ void drawPoint(Camera* rend, Vector<float, 2> pos, float radius) {
         SDL_DEBUG_CIRCLE_PTS + 1);
 }
 
-void drawPoly(Camera* rend, std::vector<Vector<float, 2>> verts) {
+inline void drawPoly(Camera* rend, std::vector<Vector<float, 2>> verts) {
     SDL_Point* points = new SDL_Point[verts.size()+1];
     for(size_t i = 0; i < verts.size(); i++) {
         points[i] = rend->toScreenSpace(verts[i]);
@@ -57,3 +63,15 @@ void drawPoly(Camera* rend, std::vector<Vector<float, 2>> verts) {
     SDL_RenderDrawLines(rend->renderer->target, points, verts.size()+1);
     delete[] points;
 }
+
+inline std::ostream& operator << (std::ostream& os, SDL_Point p) {
+    os << "<" << p.x << ", " << p.y << ">";
+    return os;
+}
+
+inline std::ostream& operator << (std::ostream& os, SDL_Rect r) {
+    os << "<" << r.x << ", " << r.y << ", " << r.w << ", " << r.h << ">";
+    return os;
+}
+
+#endif
