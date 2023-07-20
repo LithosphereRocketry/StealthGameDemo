@@ -1,3 +1,7 @@
+# Known targets
+stealthgame
+drawtest
+
 # Makefile hint files
 __DEBUG
 __RELEASE
