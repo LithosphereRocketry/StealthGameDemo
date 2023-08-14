@@ -2,6 +2,7 @@
 stealthgame
 drawtest
 boxbounce
+test
 
 # Makefile hint files
 __DEBUG
