@@ -1,6 +1,7 @@
 # Known targets
 stealthgame
 drawtest
+boxbounce
 
 # Makefile hint files
 __DEBUG

@@ -1,7 +1,7 @@
 # Semi-automated C/C++ makefile
 
 # This should be all you need to change
-TARGETS = stealthgame drawtest
+TARGETS = stealthgame drawtest boxbounce test
 
 # Header files go here
 INCDIR = include/

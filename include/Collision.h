@@ -2,6 +2,7 @@
 #define COLLISION_H
 
 #include "Physics.h"
+#include "BoundingBox.h"
 #include <iostream>
 #include <vector>
 #include <memory>
@@ -60,7 +61,7 @@ struct FreePathResult {
 };
 // make free paths printable
 inline std::ostream& operator << (std::ostream& os, FreePathResult fpr) {
-    os << "Path{" << sqrt(fpr.distSq) << ", " << fpr.target << "}";
+    os << "Path{" << sqrt(fpr.distSq) << ", " << fpr.target << ", " << fpr.type << "}";
     return os;
 }
 
@@ -79,11 +80,11 @@ class Collidable {
          *          actual Collider hit (or null if no collider is hit).
         */
         virtual FreePathResult getFreePath(const Vector<float, 2> pos,
-                                           const Vector<float, 2> dir,
+                                           const Vector<float, 2> step,
                                            float radius) = 0;
 };
 
-class Collider: public Collidable {
+class Collider: public virtual Collidable {
     public:
         /**
          * Handles collision with a physics object. Usually this will mean
@@ -93,7 +94,7 @@ class Collider: public Collidable {
          *      usually be modified.
         */
         virtual FreePathResult getFreePath(const Vector<float, 2> pos,
-                                           const Vector<float, 2> dir,
+                                           const Vector<float, 2> step,
                                            float radius) = 0;
         virtual void collide(CollidingObject* obj) = 0; // modifies obj
         virtual void slide(CollidingObject* obj, float dt) = 0;
@@ -124,11 +125,11 @@ class CollidingObject: public PhysicsObject {
  * 
  * Never collides with anything; used as placeholder
 */
-class NoneCollider: public Collider {
+class NoneCollider: public virtual Collider {
     public:
         FreePathResult getFreePath(const Vector<float, 2> pos,
-                                const Vector<float, 2> dir,
-                                float radius) { return {FREE, INFINITY, this}; }
+                                const Vector<float, 2> step,
+                                float radius) { return {FREE, INFINITY, nullptr}; }
         void collide(CollidingObject* const obj) {}
         void slide(CollidingObject* const obj, float dt) {}      
 };
@@ -149,7 +150,7 @@ class CircleCollider: public Collider {
                                     Elasticity e = PhysicsObject::ELAS_DEFAULT):
             position(pos), radius(rad), elasticity(e) {}
         FreePathResult getFreePath(const Vector<float, 2> pos,
-                                const Vector<float, 2> dir,
+                                const Vector<float, 2> step,
                                 float radius);
         void collide(CollidingObject* const obj);
         void slide(CollidingObject* const obj, float dt);
@@ -170,7 +171,7 @@ class EdgeCollider: public Collider {
                                     Elasticity e = PhysicsObject::ELAS_DEFAULT):
             position(pos), normal(norm), elasticity(e) {}
         FreePathResult getFreePath(const Vector<float, 2> pos,
-                                const Vector<float, 2> dir,
+                                const Vector<float, 2> step,
                                 float radius);
         void collide(CollidingObject* const obj);
         void slide(CollidingObject* const obj, float dt);
@@ -193,7 +194,7 @@ class SegmentCollider: public Collider {
                                     Elasticity e = PhysicsObject::ELAS_DEFAULT):
             position(pos), offset(offs), elasticity(e) {}
         FreePathResult getFreePath(const Vector<float, 2> pos,
-                                const Vector<float, 2> dir,
+                                const Vector<float, 2> step,
                                 float radius);
         void collide(CollidingObject* const obj);
         void slide(CollidingObject* const obj, float dt);
@@ -210,15 +211,15 @@ class SegmentCollider: public Collider {
  * Checks collision iteratively, no geometric shortcuts
  * This object does not own its pointers.
 */
-class CollisionGroup: public Collidable {
+class CollisionGroup: public virtual Collidable {
     public:
         FreePathResult getFreePath(const Vector<float, 2> pos,
-                                const Vector<float, 2> dir,
+                                const Vector<float, 2> step,
                                 float radius) {
             FreePathResult result = {FREE, INFINITY, nullptr};
             for(size_t i = 0; i < colliders.size(); i++) {
                 FreePathResult newres =
-                                    colliders[i]->getFreePath(pos, dir, radius);
+                                    colliders[i]->getFreePath(pos, step, radius);
                 if(newres.distSq < result.distSq) {
                     result = newres;
                 }
@@ -236,9 +237,9 @@ class CollisionGroup: public Collidable {
         TYPE* add(TYPE obj) {
             static_assert(std::is_base_of<Collidable, TYPE>::value,
                     "Collision group members must inherit from Collidable");
-            std::unique_ptr<Collidable> owned = 
+            std::unique_ptr<TYPE> owned = 
                     std::make_unique<TYPE>(std::move(obj));
-            TYPE* ptr = (TYPE*) owned.get();
+            TYPE* ptr = owned.get();
             colliders.push_back(std::move(owned));
             return ptr;
         }
@@ -262,6 +263,24 @@ class CollisionPoly: public CollisionGroup {
                 add(CircleCollider(vertices[i], 0, elas));
             }
         }
+};
+
+/**
+ * CollisionBox
+ * 
+ * Rectillinear box collision group. Currently this isn't particularly optimized-
+ * it's just a polygon that happens to be a rectangle, so lots of vector math
+ * happens unnecessarily.
+*/
+class CollisionBox: public CollisionPoly {
+    public:
+        CollisionBox(BoundingBox<float> box):
+            CollisionPoly(std::vector<Vector<float, 2>>({
+                box.tl(),
+                box.tr(),
+                box.br(),
+                box.bl()
+            })) {};
 };
 
 #endif

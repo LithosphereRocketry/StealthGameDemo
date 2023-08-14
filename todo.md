@@ -13,3 +13,7 @@
 * Enemy logic/alerting system
 * Make vectormath respect "wrong order" scalar mult
 * Figure out why bouncing physics objects on 100% elasticity lose energy slowly
+
+# BUGS
+* Bouncing objects seem to lose a little energy even on 100% elasticity with every bounce
+* Sometimes an object will hit a wall and just stop dead for no reason

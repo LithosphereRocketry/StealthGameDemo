@@ -5,9 +5,15 @@
 #include "VectorMath.h"
 
 template <class TYPE>
-struct BoundingBox {
-    Vector<TYPE, 2> c1;
-    Vector<TYPE, 2> c2;
+class BoundingBox {
+    public:
+        Vector<TYPE, 2> c1;
+        Vector<TYPE, 2> c2;
+
+        inline Vector<TYPE, 2> bl() { return c1; }
+        inline Vector<TYPE, 2> tr() { return c2; }
+        inline Vector<TYPE, 2> br() { return {c2[0], c1[1]}; }
+        inline Vector<TYPE, 2> tl() { return {c1[0], c2[1]}; }
 };
 
 template <class TYPE>
@@ -54,6 +60,13 @@ BoundingBox<TYPE> operator + (Vector<TYPE, 2> offs, BoundingBox<TYPE> a) {
 template <class TYPE>
 BoundingBox<TYPE> operator - (BoundingBox<TYPE> a, Vector<TYPE, 2> offs) {
     return a + (-offs);
+}
+
+// make boxes printable
+template <class TYPE>
+inline std::ostream& operator << (std::ostream& os, BoundingBox<TYPE> a) {
+    os << "[" << a.c1 << "..." << a.c2 << "]";
+    return os;
 }
 
 #endif

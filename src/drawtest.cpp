@@ -3,7 +3,7 @@
 #define SDL_MAIN_HANDLED
 #include "SDL2/SDL.h"
 #include "Caching.h"
-#include "Tile.h"
+#include "BasicTiles.h"
 #include "TileGrid.h"
 
 using namespace std;
@@ -26,7 +26,7 @@ int main() {
     CachedRenderer cr(renderer);
     Camera cam {&cr, {0, 0}, 100, 100};
     
-    TilePrototype t("tilesheet.png", {0, 0, 20, 20}, {{0, 0}, {1, 1}});
+    PlainTilePrototype t("tilesheet.png", {0, 0, 20, 20}, {{0, 0}, {1, 1}});
 
     TileGrid walls = TileGrid(1000, 1000, 1, 1);    
     walls.fill(&t);

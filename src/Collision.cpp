@@ -38,14 +38,14 @@ void CollidingObject::stepCollisions(float dt, Collider* stuck) {
 
 
 FreePathResult CircleCollider::getFreePath(const Vector<float, 2> objpos,
-                                           const Vector<float, 2> dir,
+                                           const Vector<float, 2> step,
                                            float rad) {
     // see if we hit
     float colrad = radius + rad;
     Vector<float, 2> offs = position - objpos;
-    Vector<float, 2> tangent = offs.rej(dir);
+    Vector<float, 2> tangent = offs.rej(step);
     if(tangent.magSq() >= powf(colrad - SKIM_EPSILON, 2)
-        || dir.dot(offs) <= SKIM_EPSILON) {
+        || step.dot(offs) <= SKIM_EPSILON) {
         return {FREE, INFINITY, this};
     }
     // See if the object is inside us
@@ -53,7 +53,7 @@ FreePathResult CircleCollider::getFreePath(const Vector<float, 2> objpos,
         return {STUCK, 0, this};
     }
     // if not, use Pythagorean Theorem to figure out how soon we hit
-    Vector<float, 2> toHitPoint = tangent + dir.toMagSq(powf(colrad, 2)
+    Vector<float, 2> toHitPoint = tangent + step.toMagSq(powf(colrad, 2)
                                                          - tangent.magSq());
     Vector<float, 2> travel = offs - toHitPoint;
     return {COLLIDING, travel.magSq(), this};
@@ -71,18 +71,18 @@ void CircleCollider::slide(CollidingObject* const obj, float dt) {
  // this feels like it should be able to be const but it sorta isn't because it 
  // gives other things permission to modify the object
 FreePathResult EdgeCollider::getFreePath(const Vector<float, 2> objpos,
-                                    const Vector<float, 2> dir, float radius) {
+                                    const Vector<float, 2> step, float radius) {
     Vector<float, 2> ctroffs = (objpos - position).proj(normal);
-    if(dir.dot(ctroffs) >= -SKIM_EPSILON) {
+    if(step.dot(ctroffs) >= -SKIM_EPSILON) {
         return {FREE, INFINITY, this};
     }
     Vector<float, 2> offs = ctroffs - ctroffs.toMag(radius);
     // offset the line 1 radius closer
     // if the line is now past the point, we're stuck and should slide
-    if(dir.dot(offs) >= 0) {
+    if(step.dot(offs) >= 0) {
         return {STUCK, 0, this};
     }
-    return {COLLIDING, dir.magSq()*powf(offs.magSq()/offs.dot(dir), 2), this};
+    return {COLLIDING, step.magSq()*powf(offs.magSq()/offs.dot(step), 2), this};
 }
 
 void EdgeCollider::collide(CollidingObject* const obj) {
@@ -95,25 +95,25 @@ void EdgeCollider::slide(CollidingObject* const obj, float dt) {
 }
 
 FreePathResult SegmentCollider::getFreePath(const Vector<float, 2> pos,
-                                    const Vector<float, 2> dir, float radius) {
+                                    const Vector<float, 2> step, float radius) {
     Vector<float, 2> ctrdiff = pos - position;
     Vector<float, 2> ctroffs = ctrdiff.rej(offset);
-    if(dir.dot(ctroffs) >= -SKIM_EPSILON) {
+    if(step.dot(ctroffs) >= -SKIM_EPSILON) {
         return {FREE, INFINITY, this};
     }
     Vector<float, 2> radoffs = ctroffs.toMag(radius);
     Vector<float, 2> offs = ctroffs - radoffs;
     Vector<float, 2> diff = ctrdiff - radoffs; // offset 1 radius closer
-    if(offs.magSq() == 0 || dir.magSq() == 0) {
-        return {FALLBACK, 0, this}; // this should almost never happen
-    }
-    float distsq = dir.magSq()*powf(offs.magSq()/offs.dot(dir), 2);
-    Vector<float, 2> along = diff + dir.toMagSq(distsq);
+    // if(offs.magSq() == 0 || step.magSq() == 0) {
+    //     return {FALLBACK, 0, this}; // this should almost never happen
+    // }
+    float distsq = step.magSq()*powf(offs.magSq()/offs.dot(step), 2);
+    Vector<float, 2> along = diff + step.toMagSq(distsq);
     float alongdist = along.dot(offset.normal());
     if(alongdist < 0 || alongdist > offset.mag()) {
         return {FREE, INFINITY, this};
     } else {
-        if(dir.dot(offs) >= 0) {
+        if(step.dot(offs) >= 0) {
             return {STUCK, 0, this};
         } else {
             return {COLLIDING, distsq, this};
@@ -122,6 +122,7 @@ FreePathResult SegmentCollider::getFreePath(const Vector<float, 2> pos,
 }
 
 void SegmentCollider::collide(CollidingObject* const obj) {
+    std::cout << "bonk\n";
     obj->applyBounce(offset.orthogonal(), elasticity);
 }
 void SegmentCollider::slide(CollidingObject* const obj, float dt) {

@@ -6,7 +6,7 @@
 #include <SDL2/SDL_image.h>
 
 #include "Caching.h"
-#include "Tile.h"
+#include "BasicTiles.h"
 #include "TileGrid.h"
 #include "Collision.h"
 #include "SDLDebug.h"
@@ -67,8 +67,8 @@ int main() {
     SDL_Rect floorbound = {64, 32, 16, 32};
     BoundingBox<float> tilebounds {{0, -100}, {100, 200}};
 
-    TilePrototype walltile("tilesheet.png", wallbound, tilebounds);
-    TilePrototype floor("tilesheet.png", floorbound, tilebounds);
+    WallTilePrototype walltile("tilesheet.png", wallbound, tilebounds);
+    PlainTilePrototype floor("tilesheet.png", floorbound, tilebounds);
     cout << "Done.\n";
     cout << "Building grid...";
     TileGrid walls = TileGrid(1000, 1000, 100, 100);

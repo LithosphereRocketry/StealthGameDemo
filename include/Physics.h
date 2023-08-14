@@ -24,6 +24,7 @@ class PhysicsObject {
             mass(m),
             pos({x, y}),
             vel({0, 0}),
+            pendingVel({0, 0}),
             elas(elasticity) {}
         inline void step(float dt) {
             stepForces(dt);

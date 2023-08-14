@@ -7,6 +7,7 @@
 #include <SDL2/SDL.h>
 
 #include "VectorMath.h"
+#include "BoundingBox.h"
 #include "WorldSprite.h"
 
 #define SDL_DEBUG_CIRCLE_PTS 20
@@ -62,6 +63,15 @@ inline void drawPoly(Camera* rend, std::vector<Vector<float, 2>> verts) {
     points[verts.size()] = points[0];
     SDL_RenderDrawLines(rend->renderer->target, points, verts.size()+1);
     delete[] points;
+}
+
+inline void drawBBox(Camera* rend, BoundingBox<float> box) {
+    drawPoly(rend, std::vector<Vector<float, 2>>({
+        box.tl(),
+        box.tr(),
+        box.br(),
+        box.bl()
+    }));
 }
 
 inline std::ostream& operator << (std::ostream& os, SDL_Point p) {

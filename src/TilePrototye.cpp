@@ -23,9 +23,10 @@ TilePrototype::TilePrototype(std::string txpath, SDL_Rect location, BoundingBox<
 //     }
 // }
 
-std::unique_ptr<Tile> TilePrototype::instantiate(Vector<float, 2> loc) {
-    return std::make_unique<Tile>(this, loc);
-}
+// TODO: this can't exist because Tile is abstract now
+// std::unique_ptr<Tile> TilePrototype::instantiate(Vector<float, 2> loc) {
+//     return std::make_unique<Tile>(this, loc);
+// }
 
 BoundingBox<float> TilePrototype::getBounds() {
     return sprite->bbox;
