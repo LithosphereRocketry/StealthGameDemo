@@ -9,6 +9,10 @@ INCDIR = include/
 SRCDIR = src/
 # Generated object files go here
 OBJDIR = obj/
+# main() C++ files go here
+TGTDIR = targets/
+# Output goes here
+BINDIR = bin/
 
 LINKS = SDL2 SDL2main SDL2_image
 
@@ -43,39 +47,45 @@ __RELEASE:
 	rm -f __DEBUG
 	touch __RELEASE
 
-# make all = make (all of the final targets given)
-all: $(TARGETS)
+TGTSRC = $(wildcard $(TGTDIR)*.cpp)
+# targets = sources in targets/ but as executables
+TARGETS = $(patsubst $(TGTDIR)%.cpp,$(BINDIR)%,$(TGTSRC))
 # includes = everything in INCDIR with a .h file extension
 INC = $(wildcard $(INCDIR)*.h)
-# C source files = SRCDIR with a .c file extension
 # C++ source files = SRCDIR with a .cpp file extension
 CPPSRC = $(wildcard $(SRCDIR)*.cpp)
 # List of filenames from CPPSRC but change them to OBJDIR/whatever.o for compiled objects
-OBJ = $(patsubst $(SRCDIR)%.cpp,$(OBJDIR)%.o,$(CPPSRC))
+DEPOBJ = $(patsubst $(SRCDIR)%.cpp,$(OBJDIR)%.o,$(CPPSRC))
 # Target objects = things that need libraries given to them = convert targets to OBJDIR/whatever.o
-TGTOBJ = $(patsubst %,$(OBJDIR)%.o,$(TARGETS))
-# Dependency objects = things that should be given to targets = whatever objects aren't targets
-DEPOBJ = $(filter-out $(TGTOBJ),$(OBJ))
+TGTOBJ = $(patsubst $(TGTDIR)%.cpp,$(OBJDIR)%.o,$(TGTSRC))
+
+# make all = make (all of the final targets given)
+all: $(TARGETS)
 
 # To build a target:
 # - Require its corresponding object and all of the dependency objects to be up to date
 # - Throw everything to the system's default C++ compiler
-$(TARGETS): %: $(OBJDIR)%.o $(DEPOBJ)
+$(TARGETS): $(BINDIR)%: $(OBJDIR)%.o $(DEPOBJ)
 	$(CXX) $(CPPOPTS) -o $@ $< $(DEPOBJ) $(LINKOPTS)
 
 # To build an object:
 # - require its .cpp file to be up to date, all includes to be up to date, and the OBJDIR folder to exist
 # - Throw it and the includes to default C++ compiler
-$(OBJDIR)%.o: $(SRCDIR)%.cpp $(INC) | $(OBJDIR)
+$(DEPOBJ): $(OBJDIR)%.o: $(SRCDIR)%.cpp $(INC) | $(OBJDIR)
+	$(CXX) $(CPPOPTS) -I$(INCDIR) -c $< -o $@
+
+$(TGTOBJ): $(OBJDIR)%.o: $(TGTDIR)%.cpp $(INC) | $(OBJDIR)
 	$(CXX) $(CPPOPTS) -I$(INCDIR) -c $< -o $@
 
 # If the object directory doesn't exist, make it
 $(OBJDIR):
 	mkdir $@
+$(BINDIR):
+	mkdir $@
 
 # If everything else fails, warn the user
 % ::
-	@echo "File $@ missing or not buildable"
+	$(error File $@ missing or not buildable)
 
 # clean deletes all objects and target executables
 clean:
