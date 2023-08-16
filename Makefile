@@ -13,6 +13,8 @@ OBJDIR = obj/
 TGTDIR = targets/
 # Output goes here
 BINDIR = bin/
+# Tests go here, same folder structure
+TESTDIR = tests/
 
 LINKS = SDL2 SDL2main SDL2_image
 
@@ -29,13 +31,13 @@ LINKOPTS = $(LINKOPTS_ALWAYS) $(LINKOPTS_DEBUG)
 # if you just type "make", this happens
 .DEFAULT_GOAL: debug
 # these rules don't refer to real files, so they shouldn't get timestamp-checked
-.PHONY: all clean debug release
+.PHONY: all clean debug release test
 
 debug: __DEBUG all
 
 release: CPPOPTS = $(CPPOPTS_ALWAYS) $(CPPOPTS_RELEASE)
 release: LINKOPTS = $(LINKOPTS_ALWAYS) $(LINKOPTS_RELEASE)
-release: __RELEASE all
+release: __RELEASE all test
 
 __DEBUG:
 	$(MAKE) clean
@@ -50,6 +52,9 @@ __RELEASE:
 TGTSRC = $(wildcard $(TGTDIR)*.cpp)
 # targets = sources in targets/ but as executables
 TARGETS = $(patsubst $(TGTDIR)%.cpp,$(BINDIR)%,$(TGTSRC))
+
+TESTSRC = $(wildcard $(TESTDIR)$(TGTDIR)*.cpp)
+TESTS = $(patsubst $(TESTDIR)$(TGTDIR)%.cpp,$(TESTDIR)$(BINDIR)%,$(TESTSRC))
 # includes = everything in INCDIR with a .h file extension
 INC = $(wildcard $(INCDIR)*.h)
 # C++ source files = SRCDIR with a .cpp file extension
@@ -58,14 +63,20 @@ CPPSRC = $(wildcard $(SRCDIR)*.cpp)
 DEPOBJ = $(patsubst $(SRCDIR)%.cpp,$(OBJDIR)%.o,$(CPPSRC))
 # Target objects = things that need libraries given to them = convert targets to OBJDIR/whatever.o
 TGTOBJ = $(patsubst $(TGTDIR)%.cpp,$(OBJDIR)%.o,$(TGTSRC))
-
+TESTOBJ = $(patsubst $(TESTDIR)$(TGTDIR)%.cpp,$(OBJDIR)%.o,$(TESTSRC))
 # make all = make (all of the final targets given)
-all: $(TARGETS)
+all: $(TARGETS) $(TESTS)
+
+test: $(TESTS)
+	for test in $(TESTS); do $$test; done
 
 # To build a target:
 # - Require its corresponding object and all of the dependency objects to be up to date
 # - Throw everything to the system's default C++ compiler
-$(TARGETS): $(BINDIR)%: $(OBJDIR)%.o $(DEPOBJ)
+$(TARGETS): $(BINDIR)%: $(OBJDIR)%.o $(DEPOBJ) | $(BINDIR)
+	$(CXX) $(CPPOPTS) -o $@ $< $(DEPOBJ) $(LINKOPTS)
+
+$(TESTS): $(TESTDIR)$(BINDIR)%: $(OBJDIR)%.o $(DEPOBJ) | $(TESTDIR)$(BINDIR)
 	$(CXX) $(CPPOPTS) -o $@ $< $(DEPOBJ) $(LINKOPTS)
 
 # To build an object:
@@ -73,14 +84,17 @@ $(TARGETS): $(BINDIR)%: $(OBJDIR)%.o $(DEPOBJ)
 # - Throw it and the includes to default C++ compiler
 $(DEPOBJ): $(OBJDIR)%.o: $(SRCDIR)%.cpp $(INC) | $(OBJDIR)
 	$(CXX) $(CPPOPTS) -I$(INCDIR) -c $< -o $@
-
 $(TGTOBJ): $(OBJDIR)%.o: $(TGTDIR)%.cpp $(INC) | $(OBJDIR)
+	$(CXX) $(CPPOPTS) -I$(INCDIR) -c $< -o $@
+$(TESTOBJ): $(OBJDIR)%.o: $(TESTDIR)$(TGTDIR)%.cpp $(INC) | $(OBJDIR)
 	$(CXX) $(CPPOPTS) -I$(INCDIR) -c $< -o $@
 
 # If the object directory doesn't exist, make it
 $(OBJDIR):
 	mkdir $@
 $(BINDIR):
+	mkdir $@
+$(TESTDIR)$(BINDIR):
 	mkdir $@
 
 # If everything else fails, warn the user
@@ -89,4 +103,4 @@ $(BINDIR):
 
 # clean deletes all objects and target executables
 clean:
-	rm -f $(OBJDIR)* $(TARGETS) __DEBUG __RELEASE
+	rm -f $(OBJDIR)* $(TARGETS) $(TESTS) __DEBUG __RELEASE
