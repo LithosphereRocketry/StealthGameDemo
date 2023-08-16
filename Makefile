@@ -68,7 +68,8 @@ TESTOBJ = $(patsubst $(TESTDIR)$(TGTDIR)%.cpp,$(OBJDIR)%.o,$(TESTSRC))
 all: $(TARGETS) $(TESTS)
 
 test: $(TESTS)
-	for test in $(TESTS); do $$test; done
+	$(foreach test,$(TESTS),$(test);)
+	$(info All tests passed!)
 
 # To build a target:
 # - Require its corresponding object and all of the dependency objects to be up to date
@@ -103,4 +104,4 @@ $(TESTDIR)$(BINDIR):
 
 # clean deletes all objects and target executables
 clean:
-	rm -f $(OBJDIR)* $(TARGETS) $(TESTS) __DEBUG __RELEASE
+	rm -f $(OBJDIR)* $(BINDIR)* $(TESTDIR)$(BINDIR)* __DEBUG __RELEASE
