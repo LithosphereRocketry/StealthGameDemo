@@ -51,8 +51,8 @@ int main(int argc, char** argv) {
     walls.load(&cam);
     cout << "walls\n";
 
-    CollidingObject test(3, 3, 1, 0.5, {1, 1, 0}, &walls);
-    test.applyDV({10, 10});
+    CollidingObject test(3, 1.5, 1, 0.5, {1, 1, 0}, &walls);
+    test.applyDV({10, 0});
 
     bool quit = false;
     while(!quit) {

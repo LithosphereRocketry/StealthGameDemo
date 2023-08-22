@@ -19,7 +19,7 @@ TESTDIR = tests/
 LINKS = SDL2 SDL2main SDL2_image
 
 CPPOPTS_ALWAYS = -pedantic -Wall -Wextra -std=c++14
-CPPOPTS_DEBUG = -g -Wno-unused-parameter -Wno-unused-variable
+CPPOPTS_DEBUG = -O0 -g -Wno-unused-parameter -Wno-unused-variable
 CPPOPTS_RELEASE = -O2 -flto
 LINKOPTS_ALWAYS = $(foreach link,$(LINKS),-l$(link))
 LINKOPTS_DEBUG = 

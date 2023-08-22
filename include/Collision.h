@@ -71,6 +71,7 @@ inline std::ostream& operator << (std::ostream& os, FreePathResult fpr) {
 */
 class Collidable {
     public:
+        virtual ~Collidable() = default;
         /**
          * Gets the available free path along a given vector.
          * pos: The position of the physics object

@@ -13,6 +13,7 @@ struct Elasticity {
 // units roughly m/kg/s
 class PhysicsObject {
     public:
+        virtual ~PhysicsObject() {};
         static constexpr Elasticity ELAS_DEFAULT = {1, 1, 0};
         float mass;
         Vector<float, 2> pos;
@@ -25,7 +26,8 @@ class PhysicsObject {
             pos({x, y}),
             vel({0, 0}),
             pendingVel({0, 0}),
-            elas(elasticity) {}
+            elas(elasticity),
+            pendingAccel({0, 0}) {}
         inline void step(float dt) {
             stepForces(dt);
             stepVelocity(dt);

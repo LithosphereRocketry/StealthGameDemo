@@ -2,7 +2,7 @@
 
 TileGrid::TileGrid(int w, int h, float tw, float th):
         shape({0, 0, w, h}), tileWidth(tw), tileHeight(th), buffer(w*h),
-        drawBound{{0, 0}, {0, 0}}, collisionBound{{0, 0}, {0, 0}},
+        drawBound({0, 0}, {0, 0}), collisionBound({0, 0}, {0, 0}),
         activeCam(nullptr) {
 }
 
@@ -51,7 +51,6 @@ void TileGrid::draw() {
 FreePathResult TileGrid::getFreePath(const Vector<float, 2> pos,
                                      const Vector<float, 2> step,
                                      float radius) {
-    std::cout << "CollisionBound = " << collisionBound << "\n";
     BoundingBox<float> startBound = {
         pos - collisionBound.c2 - Vector<float, 2>({radius, radius}),
         pos - collisionBound.c1 + Vector<float, 2>({radius, radius})

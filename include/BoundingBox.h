@@ -7,6 +7,7 @@
 template <class TYPE>
 class BoundingBox {
     public:
+        BoundingBox(Vector<TYPE, 2> _c1, Vector<TYPE, 2> _c2): c1(_c1), c2(_c2) {}
         Vector<TYPE, 2> c1;
         Vector<TYPE, 2> c2;
 
@@ -17,7 +18,7 @@ class BoundingBox {
 };
 
 template <class TYPE>
-BoundingBox<TYPE> operator | (BoundingBox<TYPE> a, BoundingBox<TYPE> b) {
+BoundingBox<TYPE> operator | (const BoundingBox<TYPE>& a, const BoundingBox<TYPE>& b) {
     return {
         { std::min(a.c1[0], b.c1[0]), std::min(a.c1[1], b.c1[1]) },
         { std::max(a.c2[0], b.c2[0]), std::max(a.c2[1], b.c2[1]) }

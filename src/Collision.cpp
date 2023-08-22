@@ -25,6 +25,7 @@ void CollidingObject::stepCollisions(float dt, Collider* stuck) {
             } else if(stuck != f.target) {
                 // if we're stuck in two things at once, give up
                 pendingVel = {0, 0};
+                std::cout << "Full stuck\n";
                 return;
             }
             f.target->slide(this, dt*mvfrac);
@@ -79,7 +80,7 @@ FreePathResult EdgeCollider::getFreePath(const Vector<float, 2> objpos,
     Vector<float, 2> offs = ctroffs - ctroffs.toMag(radius);
     // offset the line 1 radius closer
     // if the line is now past the point, we're stuck and should slide
-    if(step.dot(offs) >= 0) {
+    if(step.dot(offs) > 0) {
         return {STUCK, 0, this};
     }
     return {COLLIDING, step.magSq()*powf(offs.magSq()/offs.dot(step), 2), this};
@@ -113,7 +114,7 @@ FreePathResult SegmentCollider::getFreePath(const Vector<float, 2> pos,
     if(alongdist < 0 || alongdist > offset.mag()) {
         return {FREE, INFINITY, this};
     } else {
-        if(step.dot(offs) >= 0) {
+        if(step.dot(offs) > 0) {
             return {STUCK, 0, this};
         } else {
             return {COLLIDING, distsq, this};
@@ -122,7 +123,6 @@ FreePathResult SegmentCollider::getFreePath(const Vector<float, 2> pos,
 }
 
 void SegmentCollider::collide(CollidingObject* const obj) {
-    std::cout << "bonk\n";
     obj->applyBounce(offset.orthogonal(), elasticity);
 }
 void SegmentCollider::slide(CollidingObject* const obj, float dt) {

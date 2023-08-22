@@ -25,7 +25,7 @@ class WorldSprite: private Sprite {
     public:
         WorldSprite(const std::string& path, SDL_Rect clipMask,
                     BoundingBox<float> box):
-                Sprite(path, clipMask), bbox(box) {}
+                Sprite(path, clipMask), bbox(box), cam(nullptr) {}
         void load(Camera* camera);
         int render(Vector<float, 2> loc, uint8_t alpha = SDL_ALPHA_OPAQUE);
         BoundingBox<float> bbox;
