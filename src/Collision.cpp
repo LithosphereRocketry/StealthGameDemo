@@ -6,34 +6,38 @@ void CollidingObject::stepVelocity(float dt) {
 }
 
 void CollidingObject::stepCollisions(float dt, Collider* stuck) {
-    Vector<float, 2> move = (vel + pendingVel)*dt;
-    FreePathResult f = environment->getFreePath(pos, move, radius);
-    if(move.magSq() <= f.distSq) {
-        vel += pendingVel;
-        pos += move;
+    if(!environment) {
+        PhysicsObject::stepVelocity(dt);
     } else {
-        float mvfrac = sqrtf(f.distSq/move.magSq());
-        // roll forward to collision
-        pos += move.toMagSq(f.distSq);
-        vel += pendingVel*mvfrac;
-        // Partition up the change in velocity this frame to before & after the
-        // collision
-        pendingVel *= 1.0f - mvfrac;
-        if(f.type == STUCK) {
-            if(!stuck) {
-                stuck = f.target;
-            } else if(stuck != f.target) {
-                // if we're stuck in two things at once, give up
-                pendingVel = {0, 0};
-                std::cout << "Full stuck\n";
-                return;
-            }
-            f.target->slide(this, dt*mvfrac);
+        Vector<float, 2> move = (vel + pendingVel)*dt;
+        FreePathResult f = environment->getFreePath(pos, move, radius);
+        if(move.magSq() <= f.distSq) {
+            vel += pendingVel;
+            pos += move;
         } else {
-            f.target->collide(this);
+            float mvfrac = sqrtf(f.distSq/move.magSq());
+            // roll forward to collision
+            pos += move.toMagSq(f.distSq);
+            vel += pendingVel*mvfrac;
+            // Partition up the change in velocity this frame to before & after the
+            // collision
+            pendingVel *= 1.0f - mvfrac;
+            if(f.type == STUCK) {
+                if(!stuck) {
+                    stuck = f.target;
+                } else if(stuck != f.target) {
+                    // if we're stuck in two things at once, give up
+                    pendingVel = {0, 0};
+                    std::cout << "Full stuck\n";
+                    return;
+                }
+                f.target->slide(this, dt*mvfrac);
+            } else {
+                f.target->collide(this);
+            }
+            // Continue with the rest of the motion
+            stepCollisions(dt * (1.0f - mvfrac), stuck);
         }
-        // Continue with the rest of the motion
-        stepCollisions(dt * (1.0f - mvfrac), stuck);
     }
 }
 
