@@ -47,7 +47,7 @@ class PhysicsObject {
             return 0.5f*mass*(vel.magSq()) + mass*g*pos[1];
         }
     protected:
-        inline void stepForces(float dt) {
+        virtual void stepForces(float dt) {
             pendingVel = pendingAccel * dt;
             pendingAccel = {0, 0};
         }

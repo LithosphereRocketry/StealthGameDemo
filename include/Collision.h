@@ -105,7 +105,7 @@ class Collider: public virtual Collidable {
         // be "free to travel"
 };
 
-class CollidingObject: public PhysicsObject {
+class CollidingObject: public virtual PhysicsObject {
     public:
         float radius;
         Collidable* environment;

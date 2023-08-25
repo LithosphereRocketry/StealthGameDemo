@@ -4,6 +4,7 @@
 #include "BasicTiles.h"
 #include "TileGrid.h"
 #include "SDLDebug.h"
+#include "GameObject.h"
 
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
@@ -46,7 +47,7 @@ int main() {
     grid.fillRect(&floor, 1, 1, 30, 22);
     grid.load(&cam);
 
-    CollidingObject test(16, 12, 1, 0.5, {0.5, 0.5, 0.2}, &grid);
+    GameObject test(1, 0.5, 16, 12, {0.3, 0.3, 0.6}, 50, 3, &grid);
 
     bool quit = false;
 
@@ -106,10 +107,6 @@ int main() {
         float walkrt = (wrt ? 1 : 0) + (wlf ? -1 : 0);
         Vector<float, 2> walk = {walkrt, walkup};
         test.applyForce(walk.toMag(100));
-
-        Vector<float, 2> staticdrag = (-test.vel).toMag(50);
-        Vector<float, 2> dynamicdrag = test.vel * -3;
-        test.applyForce(staticdrag + dynamicdrag);
         test.step(1.0f/TARGET_FRAMERATE);
 
         cr.display();
