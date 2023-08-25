@@ -116,12 +116,20 @@ class Vector {
             return Vector<TYPE, SIZE>({-data[1], data[0]});
         }
         inline Vector<TYPE, SIZE> toMag(TYPE length) const {
-            return operator*(length/mag());
-            // I don't think there's any way to avoid the sqrt here
+            float m = mag();
+            if(m <= 0) {
+                return *this;
+            } else {
+                return operator*(length/m);
+            }
         }
         inline Vector<TYPE, SIZE> toMagSq(TYPE lengthSq) const {
-            return operator*(std::sqrt(lengthSq/magSq()));
-            // I don't think there's any way to avoid the sqrt here
+            float m = magSq();
+            if(m <= 0) {
+                return *this;
+            } else {
+                return operator*(std::sqrt(lengthSq/m));
+            }
         }
 };
 

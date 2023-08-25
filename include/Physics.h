@@ -4,6 +4,8 @@
 #include <SDL2/SDL.h>
 #include "VectorMath.h"
 
+#include <iostream>
+
 struct Elasticity {
     float normal;
     float parallel;

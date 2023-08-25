@@ -28,7 +28,7 @@ void CollidingObject::stepCollisions(float dt, Collider* stuck) {
                 } else if(stuck != f.target) {
                     // if we're stuck in two things at once, give up
                     pendingVel = {0, 0};
-                    std::cout << "Full stuck\n";
+                    // std::cout << "Full stuck\n";
                     return;
                 }
                 f.target->slide(this, dt*mvfrac);
