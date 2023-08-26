@@ -74,20 +74,20 @@ test: $(TESTS)
 # To build a target:
 # - Require its corresponding object and all of the dependency objects to be up to date
 # - Throw everything to the system's default C++ compiler
-$(TARGETS): $(BINDIR)%: $(OBJDIR)%.o $(DEPOBJ) | $(BINDIR)
+$(TARGETS): $(BINDIR)%: $(OBJDIR)%.o $(DEPOBJ) Makefile | $(BINDIR)
 	$(CXX) $(CPPOPTS) -o $@ $< $(DEPOBJ) $(LINKOPTS)
 
-$(TESTS): $(TESTDIR)$(BINDIR)%: $(OBJDIR)%.o $(DEPOBJ) | $(TESTDIR)$(BINDIR)
+$(TESTS): $(TESTDIR)$(BINDIR)%: $(OBJDIR)%.o $(DEPOBJ) Makefile | $(TESTDIR)$(BINDIR)
 	$(CXX) $(CPPOPTS) -o $@ $< $(DEPOBJ) $(LINKOPTS)
 
 # To build an object:
 # - require its .cpp file to be up to date, all includes to be up to date, and the OBJDIR folder to exist
 # - Throw it and the includes to default C++ compiler
-$(DEPOBJ): $(OBJDIR)%.o: $(SRCDIR)%.cpp $(INC) | $(OBJDIR)
+$(DEPOBJ): $(OBJDIR)%.o: $(SRCDIR)%.cpp $(INC) Makefile | $(OBJDIR)
 	$(CXX) $(CPPOPTS) -I$(INCDIR) -c $< -o $@
-$(TGTOBJ): $(OBJDIR)%.o: $(TGTDIR)%.cpp $(INC) | $(OBJDIR)
+$(TGTOBJ): $(OBJDIR)%.o: $(TGTDIR)%.cpp $(INC) Makefile | $(OBJDIR)
 	$(CXX) $(CPPOPTS) -I$(INCDIR) -c $< -o $@
-$(TESTOBJ): $(OBJDIR)%.o: $(TESTDIR)$(TGTDIR)%.cpp $(INC) | $(OBJDIR)
+$(TESTOBJ): $(OBJDIR)%.o: $(TESTDIR)$(TGTDIR)%.cpp $(INC) Makefile | $(OBJDIR)
 	$(CXX) $(CPPOPTS) -I$(INCDIR) -c $< -o $@
 
 # If the object directory doesn't exist, make it
