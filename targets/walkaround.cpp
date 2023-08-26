@@ -47,7 +47,7 @@ int main() {
     grid.fillRect(&floor, 1, 1, 30, 22);
     grid.load(&cam);
 
-    GameObject test(1, 0.5, 16, 12, {0.3, 0.3, 0.6}, 50, 3, &grid);
+    GameObject test(1, 0.5, 16, 12, {0.3, 0.3, 0.6}, 100, 5, &grid);
 
     bool quit = false;
 
@@ -106,7 +106,7 @@ int main() {
         float walkup = (wup ? 1 : 0) + (wdn ? -1 : 0);
         float walkrt = (wrt ? 1 : 0) + (wlf ? -1 : 0);
         Vector<float, 2> walk = {walkrt, walkup};
-        test.applyForce(walk.toMag(100));
+        test.applyForce(walk.toMag(150));
         test.step(1.0f/TARGET_FRAMERATE);
 
         cr.display();
