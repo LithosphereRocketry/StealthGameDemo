@@ -45,9 +45,10 @@ int main() {
     TileGrid grid(32, 24, 1, 1);
     grid.fill(&wall);
     grid.fillRect(&floor, 1, 1, 30, 22);
+    grid.fillRect(&wall, 10, 10, 12, 4);
     grid.load(&cam);
 
-    GameObject test(1, 0.5, 16, 12, {0.3, 0.3, 0.6}, 100, 5, &grid);
+    GameObject test(1, 0.5, 16, 6, {0.3, 0.3, 0.6}, 100, 5, &grid);
 
     bool quit = false;
 
@@ -63,8 +64,17 @@ int main() {
         // for some reason clearing the screen is a lot faster
         // it really feels like there should be a way to not clear but leave the
         // framebuffer untouched but hey this is what the internet recommends
-        SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0xFF, 0xFF);
         grid.draw();
+
+        Vector<float, 2> offset = Vector<float, 2>({16, 6}) - test.pos;
+        if(grid.getFreePath(test.pos, offset, test.radius).type == FREE) {
+            SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0xFF);
+        } else if(grid.getFreePath(test.pos, offset, 0).type == FREE) {
+            SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0x00, 0xFF);
+        } else {
+            SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
+        }
+        drawVector(&cam, offset, test.pos);
         drawPoint(&cam, test.pos, test.radius);
         SDL_Event e;
 
