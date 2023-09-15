@@ -59,9 +59,6 @@ int main() {
     while(!quit) {
         SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
         SDL_RenderClear(renderer);
-        // for some reason clearing the screen is a lot faster
-        // it really feels like there should be a way to not clear but leave the
-        // framebuffer untouched but hey this is what the internet recommends
         grid.draw();
         SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0xFF);
         drawPoint(&cam, test.pos, test.radius);
