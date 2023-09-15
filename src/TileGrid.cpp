@@ -73,6 +73,7 @@ FreePathResult TileGrid::getFreePath(const Vector<float, 2> pos,
     FreePathResult result = {FREE, INFINITY, nullptr};
     for(int i = ymin; i < ymax; i++) {
         for(int j = xmin; j < xmax; j++) {
+            std::cout << "<" << i << ", " << j << ">\n";
             if(!index(j, i)) { continue; }
             FreePathResult newres = index(j, i)->getFreePath(pos, step, radius);
             if(newres.distSq < result.distSq) {

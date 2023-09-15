@@ -27,7 +27,7 @@ int main() {
     SDL_Window* window = SDL_CreateWindow( "Hello SDL", SDL_WINDOWPOS_UNDEFINED,
                                             SDL_WINDOWPOS_UNDEFINED,
                                             SCREEN_WIDTH, SCREEN_HEIGHT,
-                                            SDL_WINDOW_SHOWN );
+                                            SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
     if(!window) {
         cout << "SDL window creation failed: error " << SDL_GetError() << endl;
         return -1;
@@ -76,8 +76,8 @@ int main() {
         }
         drawVector(&cam, offset, test.pos);
         drawPoint(&cam, test.pos, test.radius);
-        SDL_Event e;
 
+        SDL_Event e;
         while(SDL_PollEvent(&e)) {
             switch(e.type) {
                 case SDL_KEYUP:
