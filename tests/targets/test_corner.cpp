@@ -57,8 +57,6 @@ int main() {
     bool wlf = false;
     bool wrt = false;
     while(!quit) {
-        auto start = chrono::steady_clock::now();
-
         SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
         SDL_RenderClear(renderer);
         // for some reason clearing the screen is a lot faster
@@ -82,15 +80,8 @@ int main() {
         test.step(1.0f/TARGET_FRAMERATE);
 
         cr.display();
-        bool idling = false;
-        while(chrono::duration_cast<chrono::milliseconds>
-                (chrono::steady_clock::now() - start).count()
-                 < 1000/TARGET_FRAMERATE) {
-            idling = true;
-            SDL_Delay(1);
-        }
-        if(!idling) {
-            cout << "Warning: frames dropped\n";
+        if(test.pos[1] > 10) {
+            quit = true;
         }
     }
 
