@@ -18,9 +18,9 @@ class PhysicsObject {
         virtual ~PhysicsObject() {};
         static constexpr Elasticity ELAS_DEFAULT = {1, 1, 0};
         float mass;
-        Vector<float, 2> pos;
-        Vector<float, 2> vel;
-        Vector<float, 2> pendingVel;
+        Vec2f pos;
+        Vec2f vel;
+        Vec2f pendingVel;
         Elasticity elas;
         PhysicsObject(float m, float x = 0, float y = 0,
                                         Elasticity elasticity = ELAS_DEFAULT):
@@ -34,13 +34,13 @@ class PhysicsObject {
             stepForces(dt);
             stepVelocity(dt);
         }
-        inline void applyDV(Vector<float, 2> dv) { vel += dv; }
-        inline void applyImpulse(Vector<float, 2> dp) { applyDV(dp/mass); }
-        inline void applyBounce(Vector<float, 2> dir, Elasticity surfelas) {
+        inline void applyDV(Vec2f dv) { vel += dv; }
+        inline void applyImpulse(Vec2f dp) { applyDV(dp/mass); }
+        inline void applyBounce(Vec2f dir, Elasticity surfelas) {
             vel = -vel.proj(dir)*elas.normal*surfelas.normal
                     + vel.rej(dir)*elas.parallel*surfelas.parallel;
         }
-        inline void applyForce(Vector<float, 2> f) {
+        inline void applyForce(Vec2f f) {
             pendingAccel += f/mass;
         }
         float getTE(float g) {
@@ -56,7 +56,7 @@ class PhysicsObject {
             pos += vel * dt; 
         }
     protected:
-        Vector<float, 2> pendingAccel;
+        Vec2f pendingAccel;
 };
 
 #endif

@@ -26,11 +26,11 @@ class TilePrototype;
 class Tile: public virtual Collidable {
     public:
         TilePrototype* prototype;
-        Vector<float, 2> position;
+        Vec2f position;
         BoundingBox<float> getBounds();
 
         Tile() {}
-        Tile(TilePrototype* proto, Vector<float, 2> pos):
+        Tile(TilePrototype* proto, Vec2f pos):
                 prototype(proto), position(pos) {}
         // Draw regardless of position
         int draw();
@@ -43,10 +43,10 @@ class TilePrototype {
     public:
         TilePrototype(std::string txpath, SDL_Rect location, BoundingBox<float> bounds);
         void load(Camera* dest) { sprite->load(dest); }
-        int draw(Vector<float, 2> pos) { return sprite->render(pos); }
-        // int drawClipped(Vector<float, 2> pos);
+        int draw(Vec2f pos) { return sprite->render(pos); }
+        // int drawClipped(Vec2f pos);
         // TODO: should this return a RVR?
-        virtual std::unique_ptr<Tile> instantiate(Vector<float, 2> loc) = 0;
+        virtual std::unique_ptr<Tile> instantiate(Vec2f loc) = 0;
         BoundingBox<float> getBounds();
     private:
         std::unique_ptr<WorldSprite> sprite;

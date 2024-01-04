@@ -48,7 +48,7 @@ int main() {
     grid.fillRect(&wall, 10, 10, 12, 4);
     grid.load(&cam);
 
-    GameObject test(1, 0.5, 16, 6, {0.3, 0.3, 0.6}, 100, 5, &grid);
+    GameObject test(1, 0.5, 16, 6, {0.3, 1, 0}, 100, 5, &grid);
 
     bool quit = false;
 
@@ -66,15 +66,16 @@ int main() {
         // framebuffer untouched but hey this is what the internet recommends
         grid.draw();
 
-        Vector<float, 2> offset = Vector<float, 2>({16, 6}) - test.pos;
-        if(grid.getFreePath(test.pos, offset, test.radius).type == FREE) {
+        Vec2f lookvec = Vec2f({16, 6}) - test.pos;
+        Ray2f look = Ray2f(test.pos, lookvec);
+        if(grid.getFreePath(look, test.radius, lookvec.mag()).type == FREE) {
             SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0xFF);
-        } else if(grid.getFreePath(test.pos, offset, 0).type == FREE) {
+        } else if(grid.getFreePath(look, 0, lookvec.mag()).type == FREE) {
             SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0x00, 0xFF);
         } else {
             SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
         }
-        drawVector(&cam, offset, test.pos);
+        drawVector(&cam, lookvec, test.pos);
         drawPoint(&cam, test.pos, test.radius);
 
         SDL_Event e;
@@ -115,7 +116,7 @@ int main() {
         
         float walkup = (wup ? 1 : 0) + (wdn ? -1 : 0);
         float walkrt = (wrt ? 1 : 0) + (wlf ? -1 : 0);
-        Vector<float, 2> walk = {walkrt, walkup};
+        Vec2f walk = {walkrt, walkup};
         test.applyForce(walk.toMag(150));
         test.step(1.0f/TARGET_FRAMERATE);
 

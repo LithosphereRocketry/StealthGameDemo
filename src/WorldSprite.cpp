@@ -1,12 +1,12 @@
 #include <SDL2/SDL.h>
 #include "WorldSprite.h"
 
-SDL_Point Camera::toScreenSpace(Vector<float, 2> pos) const {
+SDL_Point Camera::toScreenSpace(Vec2f pos) const {
     int w, h;
     SDL_GetRendererOutputSize(renderer->target, &w, &h);
-    Vector<float, 2> scrctr = {w/2.0f, h/2.0f};
-    Vector<float, 2> posdraw = pos - position;
-    Vector<float, 2> posscr = Vector<float, 2>({ posdraw[0]*pxUnitX,
+    Vec2f scrctr = {w/2.0f, h/2.0f};
+    Vec2f posdraw = pos - position;
+    Vec2f posscr = Vec2f({ posdraw[0]*pxUnitX,
                                                 -posdraw[1]*pxUnitY }) + scrctr;
 
     return {int(posscr[0]), int(posscr[1])};
@@ -27,12 +27,12 @@ SDL_Rect Camera::toScreenSpace(BoundingBox<float> box) const {
     return newbox;
 }
 
-Vector<float, 2> Camera::toWorldSpace(SDL_Point pos) const {
+Vec2f Camera::toWorldSpace(SDL_Point pos) const {
     int w, h;
     SDL_GetRendererOutputSize(renderer->target, &w, &h);
-    Vector<float, 2> posdraw = {float(pos.x - w/2.0f)/float(pxUnitX),
+    Vec2f posdraw = {float(pos.x - w/2.0f)/float(pxUnitX),
                                 float(pos.y - h/2.0f)/float(pxUnitY)};
-    Vector<float, 2> worldPos = posdraw + position;
+    Vec2f worldPos = posdraw + position;
     return worldPos;
 }
 
@@ -60,7 +60,7 @@ void WorldSprite::load(Camera* newCam) {
 }
 
 
-int WorldSprite::render(Vector<float, 2> loc, uint8_t alpha) {
+int WorldSprite::render(Vec2f loc, uint8_t alpha) {
     SDL_Rect screenloc = cam->toScreenSpace(bbox + loc);
     return Sprite::render(&screenloc, alpha);
 }

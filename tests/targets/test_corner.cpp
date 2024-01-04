@@ -40,7 +40,7 @@ int main() {
     cout << "Initializing camera...";
     CachedRenderer cr(renderer);
     int x = 5;
-    Camera cam {&cr, {6, x-1}, 20, 20};
+    Camera cam {&cr, {6, float(x-1)}, 20, 20};
     cout << "Done.\n";
 
     TileGrid grid(1, x+1, 1, 1);
@@ -48,7 +48,7 @@ int main() {
     grid.fillRect(&wall, 0, x, 1, 1);
     grid.load(&cam);
 
-    GameObject test(1, 0.5, -0.25, x-7, {0.3, 0.3, 0.6}, 100, 5, &grid);
+    GameObject test(1, 0.5, -4.9, x-5, {0.3, 1, 0.6}, 100, 5, &grid);
 
     bool quit = false;
 
@@ -73,7 +73,7 @@ int main() {
             }
         }
         
-        test.applyForce({0, 150});
+        test.applyForce({100, 100});
         test.step(1.0f/TARGET_FRAMERATE);
 
         cr.display();

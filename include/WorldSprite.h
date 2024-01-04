@@ -11,12 +11,12 @@
 class Camera {
     public:
         CachedRenderer* renderer;
-        Vector<float, 2> position;
+        Vec2f position;
         float pxUnitX;
         float pxUnitY;
-        SDL_Point toScreenSpace(Vector<float, 2> pos) const;
+        SDL_Point toScreenSpace(Vec2f pos) const;
         SDL_Rect toScreenSpace(BoundingBox<float> box) const;
-        Vector<float, 2> toWorldSpace(SDL_Point pos) const;
+        Vec2f toWorldSpace(SDL_Point pos) const;
         BoundingBox<float> toWorldSpace(SDL_Rect box) const;
         BoundingBox<float> visibleBounds();
 };
@@ -27,7 +27,7 @@ class WorldSprite: private Sprite {
                     BoundingBox<float> box):
                 Sprite(path, clipMask), bbox(box), cam(nullptr) {}
         void load(Camera* camera);
-        int render(Vector<float, 2> loc, uint8_t alpha = SDL_ALPHA_OPAQUE);
+        int render(Vec2f loc, uint8_t alpha = SDL_ALPHA_OPAQUE);
         BoundingBox<float> bbox;
         inline Camera* camera() { return cam; }
     private:

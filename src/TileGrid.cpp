@@ -7,7 +7,7 @@ TileGrid::TileGrid(int w, int h, float tw, float th):
 }
 
 void TileGrid::put(TilePrototype* prototype, int x, int y) {
-    Vector<float, 2> p = {x*tileWidth, y*tileHeight};
+    Vec2f p = {x*tileWidth, y*tileHeight};
     drawBound |= prototype->getBounds();
     collisionBound |= prototype->getBounds(); 
     // TODO: this should probably be handled separately
@@ -48,16 +48,14 @@ void TileGrid::draw() {
     }
 }
 
-FreePathResult TileGrid::getFreePath(const Vector<float, 2> pos,
-                                     const Vector<float, 2> step,
-                                     float radius) {
+FreePathResult TileGrid::getFreePath(const Ray2f& path, float radius, float bound) {
     BoundingBox<float> startBound = {
-        pos - collisionBound.c2 - Vector<float, 2>({radius, radius}),
-        pos - collisionBound.c1 + Vector<float, 2>({radius, radius})
+        path.origin - collisionBound.c2 - Vec2f({radius, radius}),
+        path.origin - collisionBound.c1 + Vec2f({radius, radius})
     };
     BoundingBox<float> endBound = {
-        pos - collisionBound.c2 + step - Vector<float, 2>({radius, radius}),
-        pos - collisionBound.c1 + step + Vector<float, 2>({radius, radius})
+        path.origin - collisionBound.c2 + path.dir*bound - Vec2f({radius, radius}),
+        path.origin - collisionBound.c1 + path.dir*bound + Vec2f({radius, radius})
     };
     BoundingBox<float> moveBound = startBound | endBound;
 
@@ -70,13 +68,12 @@ FreePathResult TileGrid::getFreePath(const Vector<float, 2> pos,
     // int xmax = shape.w;
     // int ymax = shape.h;
 
-    FreePathResult result = {FREE, INFINITY, nullptr};
+    FreePathResult result = {FREE, INFINITY, INFINITY, nullptr};
     for(int i = ymin; i < ymax; i++) {
         for(int j = xmin; j < xmax; j++) {
-            std::cout << "<" << i << ", " << j << ">\n";
             if(!index(j, i)) { continue; }
-            FreePathResult newres = index(j, i)->getFreePath(pos, step, radius);
-            if(newres.distSq < result.distSq) {
+            FreePathResult newres = index(j, i)->getFreePath(path, radius, bound);
+            if(newres.dist < result.dist) {
                 result = newres;
             }
         }

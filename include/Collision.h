@@ -56,12 +56,14 @@ enum FreePathType {
 
 struct FreePathResult {
     FreePathType type;
-    float distSq;
+    float dist;
+    float safeDist;
     Collider* target;
 };
 // make free paths printable
 inline std::ostream& operator << (std::ostream& os, FreePathResult fpr) {
-    os << "Path{" << sqrt(fpr.distSq) << ", " << fpr.target << ", " << fpr.type << "}";
+    os << "Path{" << fpr.dist << ", " << fpr.safeDist << ", " << fpr.target
+          << ", " << fpr.type << "}";
     return os;
 }
 
@@ -74,15 +76,15 @@ class Collidable {
         virtual ~Collidable() = default;
         /**
          * Gets the available free path along a given vector.
-         * pos: The position of the physics object
-         * dir: The direction the physics object is traveling
+         * path: The path of travel of the object.
          * radius: The radius of the physics object.
+         * bound: The maximum distance that needs to be checked; for optimization
+         *        purposes only
          * Returns: a FreePathResult containing the available distance and the
          *          actual Collider hit (or null if no collider is hit).
         */
-        virtual FreePathResult getFreePath(const Vector<float, 2> pos,
-                                           const Vector<float, 2> step,
-                                           float radius) = 0;
+        virtual FreePathResult getFreePath(const Ray2f& path, float radius,
+                float bound = INFINITY) = 0;
 };
 
 class Collider: public virtual Collidable {
@@ -94,27 +96,25 @@ class Collider: public virtual Collidable {
          * obj: The object colliding with this collider. This object will
          *      usually be modified.
         */
-        virtual FreePathResult getFreePath(const Vector<float, 2> pos,
-                                           const Vector<float, 2> step,
-                                           float radius) = 0;
+        virtual FreePathResult getFreePath(const Ray2f& path, float radius,
+                float bound) = 0;
         virtual void collide(CollidingObject* obj) = 0; // modifies obj
         virtual void slide(CollidingObject* obj, float dt) = 0;
     protected:
-        static constexpr float SKIM_EPSILON = 1e-6;
-        // the minimum distance an object may intrude into a surface and still
-        // be "free to travel"
+        static constexpr float SKIM_EPSILON = 1e-3;
+        // objects that collide with a surface do so this distance away from it
 };
 
 class CollidingObject: public virtual PhysicsObject {
     public:
+        static constexpr size_t MAX_ITER = 100;
         float radius;
         Collidable* environment;
         CollidingObject(float x, float y, float m, float r, Elasticity e,
-                                    Collidable* env): PhysicsObject(m, x, y, e),
-                                                      radius(r),
-                                                      environment(env) {}
+                Collidable* env):
+                PhysicsObject(m, x, y, e), radius(r), environment(env) {}
         void stepVelocity(float dt);
-        void stepCollisions(float dt, Collider* stuck);
+        void stepCollisions(float dt, Collider* stuck, size_t max_iter = MAX_ITER);
 };
 
 /**
@@ -128,9 +128,9 @@ class CollidingObject: public virtual PhysicsObject {
 */
 class NoneCollider: public virtual Collider {
     public:
-        FreePathResult getFreePath(const Vector<float, 2> pos,
-                                const Vector<float, 2> step,
-                                float radius) { return {FREE, INFINITY, nullptr}; }
+        FreePathResult getFreePath(const Ray2f&, float, float) {
+            return {FREE, INFINITY, INFINITY, nullptr};
+        }
         void collide(CollidingObject* const obj) {}
         void slide(CollidingObject* const obj, float dt) {}      
 };
@@ -142,17 +142,13 @@ class NoneCollider: public virtual Collider {
  * Defined by a center point and radius
 */
 
-class CircleCollider: public Collider {
+class CircleCollider: public Collider, public Circle_f {
     public:
-        Vector<float, 2> position;
-        float radius;
         Elasticity elasticity;
-        CircleCollider(Vector<float, 2> pos, float rad,
-                                    Elasticity e = PhysicsObject::ELAS_DEFAULT):
-            position(pos), radius(rad), elasticity(e) {}
-        FreePathResult getFreePath(const Vector<float, 2> pos,
-                                const Vector<float, 2> step,
-                                float radius);
+        CircleCollider(Vec2f pos, float rad,
+                Elasticity e = PhysicsObject::ELAS_DEFAULT):
+                Circle_f(pos, rad), elasticity(e) {}
+        FreePathResult getFreePath(const Ray2f& path, float radius, float);
         void collide(CollidingObject* const obj);
         void slide(CollidingObject* const obj, float dt);
 };
@@ -163,17 +159,13 @@ class CircleCollider: public Collider {
  * Infinite straight line collider
  * Defined by a center point and normal vector
 */
-class EdgeCollider: public Collider {
+class EdgeCollider: public Collider, public Ray2f {
     public:
-        Vector<float, 2> position;
-        Vector<float, 2> normal;
         Elasticity elasticity;
-        EdgeCollider(Vector<float, 2> pos, Vector<float, 2> norm,
-                                    Elasticity e = PhysicsObject::ELAS_DEFAULT):
-            position(pos), normal(norm), elasticity(e) {}
-        FreePathResult getFreePath(const Vector<float, 2> pos,
-                                const Vector<float, 2> step,
-                                float radius);
+        EdgeCollider(Vec2f pos, Vec2f norm,
+                Elasticity e = PhysicsObject::ELAS_DEFAULT):
+                Ray2f(pos, norm), elasticity(e) {}
+        FreePathResult getFreePath(const Ray2f& path, float radius, float);
         void collide(CollidingObject* const obj);
         void slide(CollidingObject* const obj, float dt);
 };
@@ -186,17 +178,14 @@ class EdgeCollider: public Collider {
  * NOTE: Does not include endpoints; CircleColliders with radius 0 should be
  * placed there
 */
-class SegmentCollider: public Collider {
+class SegmentCollider: public Collider, public Ray2f {
     public:
-        Vector<float, 2> position;
-        Vector<float, 2> offset;
+        float length;
         Elasticity elasticity;
-        SegmentCollider(Vector<float, 2> pos, Vector<float, 2> offs,
-                                    Elasticity e = PhysicsObject::ELAS_DEFAULT):
-            position(pos), offset(offs), elasticity(e) {}
-        FreePathResult getFreePath(const Vector<float, 2> pos,
-                                const Vector<float, 2> step,
-                                float radius);
+        SegmentCollider(Vec2f pos, Vec2f offs,
+                Elasticity e = PhysicsObject::ELAS_DEFAULT):
+                Ray2f(pos, -offs.orthogonal()), length(offs.mag()), elasticity(e) {}
+        FreePathResult getFreePath(const Ray2f& path, float radius, float);
         void collide(CollidingObject* const obj);
         void slide(CollidingObject* const obj, float dt);
 };
@@ -214,14 +203,12 @@ class SegmentCollider: public Collider {
 */
 class CollisionGroup: public virtual Collidable {
     public:
-        FreePathResult getFreePath(const Vector<float, 2> pos,
-                                const Vector<float, 2> step,
-                                float radius) {
-            FreePathResult result = {FREE, INFINITY, nullptr};
+        FreePathResult getFreePath(const Ray2f& path, float radius, float bound) {
+            FreePathResult result = {FREE, INFINITY, INFINITY, nullptr};
             for(size_t i = 0; i < colliders.size(); i++) {
                 FreePathResult newres =
-                                    colliders[i]->getFreePath(pos, step, radius);
-                if(newres.distSq < result.distSq) {
+                        colliders[i]->getFreePath(path, radius, bound);
+                if(newres.dist < result.dist) {
                     result = newres;
                 }
             }
@@ -238,8 +225,7 @@ class CollisionGroup: public virtual Collidable {
         TYPE* add(TYPE obj) {
             static_assert(std::is_base_of<Collidable, TYPE>::value,
                     "Collision group members must inherit from Collidable");
-            std::unique_ptr<TYPE> owned = 
-                    std::make_unique<TYPE>(std::move(obj));
+            std::unique_ptr<TYPE> owned = std::make_unique<TYPE>(std::move(obj));
             TYPE* ptr = owned.get();
             colliders.push_back(std::move(owned));
             return ptr;
@@ -256,8 +242,8 @@ class CollisionGroup: public virtual Collidable {
 */
 class CollisionPoly: public CollisionGroup {
     public:
-        CollisionPoly(std::vector<Vector<float, 2>> vertices,
-                            Elasticity elas = PhysicsObject::ELAS_DEFAULT) {
+        CollisionPoly(std::vector<Vec2f> vertices,
+                    Elasticity elas = PhysicsObject::ELAS_DEFAULT) {
             for(size_t i = 0; i < vertices.size(); i++) {
                 add(SegmentCollider(vertices[i],
                     vertices[(i+1)%vertices.size()]-vertices[i], elas));
@@ -276,11 +262,11 @@ class CollisionPoly: public CollisionGroup {
 class CollisionBox: public CollisionPoly {
     public:
         CollisionBox(BoundingBox<float> box):
-            CollisionPoly(std::vector<Vector<float, 2>>({
-                box.tl(),
+            CollisionPoly(std::vector<Vec2f>({
                 box.tr(),
-                box.br(),
-                box.bl()
+                box.tl(),
+                box.bl(),
+                box.br()
             })) {};
 };
 

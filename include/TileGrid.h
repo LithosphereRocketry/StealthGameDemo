@@ -19,9 +19,7 @@ class TileGrid: public Collidable {
         void load(Camera* cam);
         void draw();
 
-        virtual FreePathResult getFreePath(const Vector<float, 2> pos,
-                                           const Vector<float, 2> step,
-                                           float radius);
+        virtual FreePathResult getFreePath(const Ray2f& path, float radius, float bound);
     private:
         SDL_Rect shape;
         float tileWidth, tileHeight;

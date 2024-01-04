@@ -6,7 +6,7 @@ TilePrototype::TilePrototype(std::string txpath, SDL_Rect location, BoundingBox<
 }
 
 // TODO: reimplement if this turns out to be good; right now it barely matters
-// int TilePrototype::drawClipped(Vector<float, 2> pos) {
+// int TilePrototype::drawClipped(Vec2f pos) {
 //     SDL_Rect screenpos = {
 //         (int) round((position->x+graphicsBox.x-camx)*zoom) + screenCenter->x,
 //         (int) round((position->y+graphicsBox.y-camy)*zoom) + screenCenter->y,
@@ -24,7 +24,7 @@ TilePrototype::TilePrototype(std::string txpath, SDL_Rect location, BoundingBox<
 // }
 
 // TODO: this can't exist because Tile is abstract now
-// std::unique_ptr<Tile> TilePrototype::instantiate(Vector<float, 2> loc) {
+// std::unique_ptr<Tile> TilePrototype::instantiate(Vec2f loc) {
 //     return std::make_unique<Tile>(this, loc);
 // }
 

@@ -24,12 +24,12 @@ long int tottime;
 
 CollisionGroup grp;
 CollidingObject test(0, 10, 1, 1, {0.9, 0.9, 0.2}, &grp);
-vector<Vector<float, 2>> polygon = {
-    {-2, -3},
-    {-1, 0},
-    {1, -3},
+vector<Vec2f> polygon = {
+    {-1, -7},
     {2, -6},
-    {-1, -7}
+    {1, -3},
+    {-1, 0},
+    {-2, -3}
 };
 
 int main() {
@@ -71,7 +71,7 @@ int main() {
     PlainTilePrototype floor("tilesheet.png", floorbound, tilebounds);
     cout << "Done.\n";
     cout << "Building grid...";
-    TileGrid walls = TileGrid(1000, 1000, 100, 100);
+    TileGrid walls = TileGrid(10, 10, 100, 100);
     walls.fill(&walltile);
     walls.fillRect(&floor, 1, 1, 8, 8);
     walls.load(&cam);
@@ -88,8 +88,8 @@ int main() {
         walls.draw();
         SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0xFF, 0xFF);
         drawPoint(&cam, test.pos, test.radius);
-        drawInfLine(&cam, edge->position, edge->normal);
-        drawInfLine(&cam, wall->position, wall->normal);
+        drawInfLine(&cam, edge->origin, edge->dir);
+        drawInfLine(&cam, wall->origin, wall->dir);
         drawPoly(&cam, polygon);
         SDL_Event e;
         while(SDL_PollEvent(&e)) {

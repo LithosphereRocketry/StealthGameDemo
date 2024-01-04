@@ -12,8 +12,8 @@
 
 #define SDL_DEBUG_CIRCLE_PTS 20
 
-inline void drawInfLine(Camera* rend, Vector<float, 2> origin,
-            Vector<float, 2> normal) {
+inline void drawInfLine(Camera* rend, Vec2f origin,
+            Vec2f normal) {
     SDL_Point originpt = rend->toScreenSpace(origin);
     SDL_Point offspt = rend->toScreenSpace(origin+normal.orthogonal());
     SDL_Point scroffs = {offspt.x-originpt.x, offspt.y-originpt.y};
@@ -30,9 +30,9 @@ inline void drawInfLine(Camera* rend, Vector<float, 2> origin,
     }
 }
 
-inline void drawVector(Camera* rend, Vector<float, 2> vec, Vector<float, 2> origin) {
-    Vector<float, 2> corner1 = origin + vec*0.9 + vec.orthogonal()*0.1; 
-    Vector<float, 2> corner2 = origin + vec*0.9 - vec.orthogonal()*0.1;
+inline void drawVector(Camera* rend, Vec2f vec, Vec2f origin) {
+    Vec2f corner1 = origin + vec*0.9 + vec.orthogonal()*0.1; 
+    Vec2f corner2 = origin + vec*0.9 - vec.orthogonal()*0.1;
     SDL_Point points[] = {
         rend->toScreenSpace(origin),
         rend->toScreenSpace(origin+vec),
@@ -43,7 +43,7 @@ inline void drawVector(Camera* rend, Vector<float, 2> vec, Vector<float, 2> orig
     SDL_RenderDrawLines(rend->renderer->target, points, 5);
 }
 
-inline void drawPoint(Camera* rend, Vector<float, 2> pos, float radius) {
+inline void drawPoint(Camera* rend, Vec2f pos, float radius) {
     static const double pi = std::atan(1.0)*4; // TODO: migrate to C++20 pi?
     SDL_Point points[SDL_DEBUG_CIRCLE_PTS + 1];
     for(size_t i = 0; i < SDL_DEBUG_CIRCLE_PTS + 1; i++) {
@@ -55,7 +55,7 @@ inline void drawPoint(Camera* rend, Vector<float, 2> pos, float radius) {
         SDL_DEBUG_CIRCLE_PTS + 1);
 }
 
-inline void drawPoly(Camera* rend, std::vector<Vector<float, 2>> verts) {
+inline void drawPoly(Camera* rend, std::vector<Vec2f> verts) {
     SDL_Point* points = new SDL_Point[verts.size()+1];
     for(size_t i = 0; i < verts.size(); i++) {
         points[i] = rend->toScreenSpace(verts[i]);
@@ -66,7 +66,7 @@ inline void drawPoly(Camera* rend, std::vector<Vector<float, 2>> verts) {
 }
 
 inline void drawBBox(Camera* rend, BoundingBox<float> box) {
-    drawPoly(rend, std::vector<Vector<float, 2>>({
+    drawPoly(rend, std::vector<Vec2f>({
         box.tl(),
         box.tr(),
         box.br(),
