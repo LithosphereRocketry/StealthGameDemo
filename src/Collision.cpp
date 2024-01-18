@@ -18,7 +18,6 @@ void CollidingObject::stepCollisions(float dt, Collider* stuck, size_t max_iter)
             pos += move;
         } else if(max_iter == 0) {
             if(pendingVel.magSq() > std::pow(Collidable::SKIM_EPSILON, 2)) {
-                std::cout << "Warning: pending failed\n";
                 pendingVel = {0, 0};    
                 stepCollisions(dt, stuck, 0);
             } else {
