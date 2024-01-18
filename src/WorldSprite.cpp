@@ -6,9 +6,8 @@ SDL_Point Camera::toScreenSpace(Vec2f pos) const {
     SDL_GetRendererOutputSize(renderer->target, &w, &h);
     Vec2f scrctr = {w/2.0f, h/2.0f};
     Vec2f posdraw = pos - position;
-    Vec2f posscr = Vec2f({ posdraw[0]*pxUnitX,
-                                                -posdraw[1]*pxUnitY }) + scrctr;
-
+    Vec2f posscr = Vec2f({ posdraw[0]*pxUnitX, -posdraw[1]*pxUnitY }) + scrctr;
+    
     return {int(posscr[0]), int(posscr[1])};
 }
 
