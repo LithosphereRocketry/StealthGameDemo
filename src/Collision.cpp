@@ -17,17 +17,20 @@ void CollidingObject::stepCollisions(float dt, Collider* stuck, size_t max_iter)
             vel += pendingVel;
             pos += move;
         } else if(max_iter == 0) {
-            std::cout << "Warning: iteration timeout\n";
+            if(pendingVel.magSq() > std::pow(Collidable::SKIM_EPSILON, 2)) {
+                std::cout << "Warning: pending failed\n";
+                pendingVel = {0, 0};    
+                stepCollisions(dt, stuck, 0);
+            } else {
+                std::cout << "Warning: iteration timeout\n";
+            }
         } else {
             float mvfrac = f.safeDist/move.mag();
             // roll forward to collision
             pos += move.toMag(f.safeDist);
             vel += pendingVel*mvfrac;
-            // This is gross and should not happen but yk debugging
-            std::cout << "Colliding with " << typeid(*(f.target)).name()
-                      << ", fraction = " << mvfrac << "\n";
-            // Partition up the change in velocity this frame to before & after the
-            // collision
+            // Partition up the change in velocity this frame to before & after
+            // the collision
             pendingVel *= 1.0f - mvfrac;
             if(f.type == STUCK) {
                 if(!stuck) {
@@ -64,11 +67,9 @@ FreePathResult CircleCollider::getFreePath(const Ray2f& path, float radius, floa
 }
 
 void CircleCollider::collide(CollidingObject* const obj) {
-    std::cout << "CircleCollider collide\n";
     obj->applyBounce(obj->pos - origin, elasticity);
 }
 void CircleCollider::slide(CollidingObject* const obj, float dt) {
-    std::cout << "CircleCollider slide\n";
     Vec2f normal = obj->pos - origin;
     obj->vel = obj->vel.rej(normal);
     obj->pendingVel = obj->pendingVel.rej(normal);

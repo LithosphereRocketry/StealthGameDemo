@@ -73,6 +73,8 @@ inline std::ostream& operator << (std::ostream& os, FreePathResult fpr) {
 */
 class Collidable {
     public:
+        static constexpr float SKIM_EPSILON = 1e-3;
+        // objects that collide with a surface do so this distance away from it
         virtual ~Collidable() = default;
         /**
          * Gets the available free path along a given vector.
@@ -100,9 +102,6 @@ class Collider: public virtual Collidable {
                 float bound) = 0;
         virtual void collide(CollidingObject* obj) = 0; // modifies obj
         virtual void slide(CollidingObject* obj, float dt) = 0;
-    protected:
-        static constexpr float SKIM_EPSILON = 1e-3;
-        // objects that collide with a surface do so this distance away from it
 };
 
 class CollidingObject: public virtual PhysicsObject {
