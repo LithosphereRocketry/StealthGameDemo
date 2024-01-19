@@ -114,6 +114,7 @@ class CollidingObject: public virtual PhysicsObject {
                 PhysicsObject(m, x, y, e), radius(r), environment(env) {}
         void stepVelocity(float dt);
         void stepCollisions(float dt, Collider* stuck, size_t max_iter = MAX_ITER);
+        void forceSlide(Vec2f normal);
 };
 
 /**

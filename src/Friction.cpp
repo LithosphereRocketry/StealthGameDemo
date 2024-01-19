@@ -7,11 +7,12 @@ FrictionObject::FrictionObject(float m, float x, float y,
         static_drag(sdrag), dynamic_drag(ddrag) {}
 
 void FrictionObject::stepForces(float dt) {
-    Vec2f ppvel = pendingVel;
     applyForce(-vel.toMag(static_drag)
               - vel * dynamic_drag);
-    if(pendingVel.dot(ppvel) < 0) {
-        pendingVel = {0, 0};
+    // it feels like this *dt calculation happens kinda redundantly
+    // also this code is kinda bad but it's better
+    if((vel + pendingAccel*dt).dot(vel) < 0) {
+        vel = {0, 0};
+        pendingAccel = {0, 0};
     }
-    PhysicsObject::stepForces(dt);
 }

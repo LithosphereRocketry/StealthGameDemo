@@ -11,14 +11,15 @@ void CollidingObject::stepCollisions(float dt, Collider* stuck, size_t max_iter)
     if(!environment) {
         PhysicsObject::stepVelocity(dt);
     } else {
-        Vec2f move = (vel + pendingVel)*dt;
+        Vec2f move = (vel + pendingAccel*dt)*dt;
         FreePathResult f = environment->getFreePath(Ray2f(pos, move), radius, move.mag());
         if(move.mag() <= f.safeDist) {
-            vel += pendingVel;
+            vel += pendingAccel*dt;
             pos += move;
+            pendingAccel = {0, 0};
         } else if(max_iter == 0) {
-            if(pendingVel.magSq() > std::pow(Collidable::SKIM_EPSILON, 2)) {
-                pendingVel = {0, 0};    
+            if(pendingAccel.magSq() > std::pow(Collidable::SKIM_EPSILON/dt, 2)) {
+                pendingAccel = {0, 0};    
                 stepCollisions(dt, stuck, 0);
             } else {
                 std::cout << "Warning: iteration timeout\n";
@@ -27,16 +28,16 @@ void CollidingObject::stepCollisions(float dt, Collider* stuck, size_t max_iter)
             float mvfrac = f.safeDist/move.mag();
             // roll forward to collision
             pos += move.toMag(f.safeDist);
-            vel += pendingVel*mvfrac;
+            vel += pendingAccel*dt*mvfrac;
             // Partition up the change in velocity this frame to before & after
             // the collision
-            pendingVel *= 1.0f - mvfrac;
+            pendingAccel *= 1.0f - mvfrac;
             if(f.type == STUCK) {
                 if(!stuck) {
                     stuck = f.target;
                 } else if(stuck != f.target) {
                     // if we're stuck in two things at once, give up
-                    pendingVel = {0, 0};
+                    pendingAccel = {0, 0};
                     return;
                 }
                 f.target->slide(this, dt*mvfrac);
@@ -49,6 +50,10 @@ void CollidingObject::stepCollisions(float dt, Collider* stuck, size_t max_iter)
     }
 }
 
+void CollidingObject::forceSlide(Vec2f normal) {
+    vel = vel.rej(normal);
+    pendingAccel = pendingAccel.rej(normal);
+}
 
 FreePathResult CircleCollider::getFreePath(const Ray2f& path, float radius, float) {
     const Circle_f regGeom = addRadius(radius);
@@ -69,9 +74,7 @@ void CircleCollider::collide(CollidingObject* const obj) {
     obj->applyBounce(obj->pos - origin, elasticity);
 }
 void CircleCollider::slide(CollidingObject* const obj, float dt) {
-    Vec2f normal = obj->pos - origin;
-    obj->vel = obj->vel.rej(normal);
-    obj->pendingVel = obj->pendingVel.rej(normal);
+    obj->forceSlide(obj->pos - origin);
 }
 
  // this feels like it should be able to be const but it sorta isn't because it 
@@ -96,8 +99,7 @@ void EdgeCollider::collide(CollidingObject* const obj) {
 }
 
 void EdgeCollider::slide(CollidingObject* const obj, float dt) {
-    obj->vel = obj->vel.rej(dir);
-    obj->pendingVel = obj->pendingVel.rej(dir);
+    obj->forceSlide(dir);
 }
 
 FreePathResult SegmentCollider::getFreePath(const Ray2f& path, float radius, float) {
@@ -122,6 +124,5 @@ void SegmentCollider::collide(CollidingObject* const obj) {
     obj->applyBounce(dir, elasticity);
 }
 void SegmentCollider::slide(CollidingObject* const obj, float dt) {
-    obj->vel = obj->vel.rej(dir);
-    obj->pendingVel = obj->pendingVel.rej(dir);
+    obj->forceSlide(dir);
 }
